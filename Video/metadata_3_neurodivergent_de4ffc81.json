@@ -1,0 +1,17 @@
+{
+  "row_index": 3,
+  "user_type": "neurodivergent",
+  "prompt_used": "Ava is a helpful assistant explaining. steady, consistent gestures, calm tone. even lighting, predictable movements. Medium shot, upper body visible.",
+  "narration_script": "Here's a clear step-by-step guide: I know how frustrating it can be when you're having trouble navigating something online. Next step: Here's what you should do next: Each step builds on the previous one. Next step: Open up Google Chrome. These steps will help you succeed.",
+  "response_hash": "de4ffc81",
+  "generation_settings": {
+    "resolution": [
+      576,
+      320
+    ],
+    "fps": 16,
+    "num_frames": 49,
+    "inference_steps": 30,
+    "guidance_scale": 9.0
+  }
+}

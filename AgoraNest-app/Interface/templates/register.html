@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register New User - CareAI Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --primary-hover: #0e906f;
+            --secondary-color: #f7f7f8;
+            --border-color: #e5e5e5;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --bg-white: #ffffff;
+            --bg-gray: #f7f7f8;
+            --bg-dark: #202123;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-white);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .registration-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .registration-container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                min-height: 100vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                position: relative;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background: var(--bg-white);
+            }
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 1rem;
+                align-self: flex-start;
+                background: var(--bg-gray);
+                border: none;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .back-btn:hover {
+            background: var(--bg-gray);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                width: 48px;
+                height: 48px;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.75rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .subtitle {
+                font-size: 1rem;
+                line-height: 1.4;
+            }
+        }
+
+        .registration-form {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .registration-form {
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                padding: 1rem;
+                margin: 0;
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 140px; /* More space for fixed buttons */
+                height: 100vh;
+                position: relative;
+            }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .step-indicator {
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 768px) {
+            .step {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step.inactive {
+            background: var(--bg-gray);
+            color: var(--text-muted);
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .step-number {
+                width: 20px;
+                height: 20px;
+                font-size: 0.75rem;
+            }
+        }
+
+        .step.active .step-number {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .step.completed .step-number {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .step.inactive .step-number {
+            background: var(--text-muted);
+            color: white;
+        }
+
+        .form-step {
+            display: none;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .form-step.active {
+                display: block;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 20px;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.375rem;
+            }
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            background: var(--bg-white);
+        }
+
+        @media (max-width: 768px) {
+            .form-input {
+                padding: 0.875rem;
+                font-size: 1rem;
+                border-radius: 6px;
+            }
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        .care-types-container {
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .care-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            overflow: visible;
+        }
+
+        .scroll-indicator {
+            display: none;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            background: linear-gradient(transparent, var(--bg-white));
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+        }
+
+        .scroll-indicator i {
+            margin-right: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+
+        @media (max-width: 768px) {
+            .care-types-container {
+                margin-top: 0.75rem;
+            }
+
+            /* Mobile: show a compact 2-column grid so users see options without vertical scrolling */
+            .care-types {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .care-type-card {
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 12px;
+            }
+
+            .scroll-indicator {
+                display: none; /* hide scroll hint on mobile per request */
+            }
+            /* hide long description text on mobile to keep cards compact */
+            .care-description { display: none !important; }
+            /* allow normal flow so items pair naturally (no forced full-row for last child) */
+        }
+
+        .care-type-card {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-white);
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        @media (max-width: 768px) {
+            .care-type-card {
+                padding: 1.25rem;
+                border-radius: 10px;
+                border-width: 1px;
+            }
+        }
+
+        .care-type-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .care-type-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(16, 163, 127, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(16, 163, 127, 0.2);
+        }
+
+        .care-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .care-img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            margin: 0 auto 0.75rem;
+            border-radius: 8px;
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .care-emoji {
+                font-size: 2.5rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+
+        .care-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .care-title {
+                font-size: 1rem;
+                margin-bottom: 0.375rem;
+            }
+        }
+
+        .care-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .care-description {
+                font-size: 0.8rem;
+                line-height: 1.4;
+            }
+        }
+
+        .voice-section {
+            background: var(--bg-gray);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .voice-section {
+                padding: 1.5rem;
+                margin: 1.5rem 0;
+                border-radius: 10px;
+            }
+        }
+
+        .voice-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .voice-title {
+                font-size: 1.125rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+
+        .voice-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 768px) {
+            .voice-description {
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
+                line-height: 1.5;
+            }
+        }
+
+        .record-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .record-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.75rem;
+                margin: 0.75rem;
+            }
+        }
+
+        .record-btn.ready {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .record-btn.recording {
+            background: #ef4444;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .record-btn.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .samples-grid {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .samples-grid {
+                gap: 0.75rem;
+                margin: 1.5rem 0;
+            }
+        }
+
+        .sample-indicator {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: var(--bg-white);
+        }
+
+        @media (max-width: 768px) {
+            .sample-indicator {
+                width: 50px;
+                height: 50px;
+                font-size: 1rem;
+                border-width: 2px;
+            }
+        }
+
+        .sample-indicator.completed {
+            border-color: var(--success-color);
+            background: var(--success-color);
+            color: white;
+        }
+
+        .sample-indicator.current {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .progress-bar {
+                margin: 0.75rem 0;
+            }
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        /* Fixed bottom navigation for mobile */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .mobile-bottom-nav .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-bottom-nav .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+                margin-top: 1.5rem;
+                display: none; /* Hide desktop buttons on mobile */
+            }
+
+            .mobile-bottom-nav {
+                display: block; /* Show mobile bottom nav */
+            }
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%;
+                padding: 0.875rem 1.5rem;
+                font-size: 0.95rem;
+                justify-content: center;
+                min-height: 48px;
+                border-radius: 8px;
+            }
+
+            /* Ensure content is scrollable */
+            .form-step {
+                padding-bottom: 20px;
+            }
+
+            /* Better touch targets */
+            .care-type-card {
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-gray);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .status-message {
+                padding: 0.875rem;
+                margin: 0.75rem 0;
+                font-size: 0.9rem;
+            }
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem 0.75rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .registration-form {
+                padding: 0.75rem;
+            }
+
+            .care-type-card {
+                padding: 1rem;
+            }
+
+
+            /* Use 2 columns on small phones so four cards appear as a 2x2 grid */
+            .care-types {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .care-type-card {
+                padding: 10px;
+                min-height: 80px;
+            }
+
+            .care-img {
+                width: 56px;
+                height: 56px;
+                margin-bottom: 0.5rem;
+            }
+
+            .care-title {
+                font-size: 1rem;
+            }
+
+            /* Reduce subtitle and paddings so the card grid is more visible above the fixed bottom nav */
+            .registration-form { padding-bottom: 110px; }
+            .care-emoji {
+                font-size: 2rem;
+            }
+
+            .voice-section {
+                padding: 1.25rem;
+            }
+
+            .record-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .sample-indicator {
+                width: 45px;
+                height: 45px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back to Chat
+        </a>
+
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="title">Register New User</h1>
+            <p class="subtitle">Create a personalized voice profile for tailored care assistance</p>
+        </div>
+
+        <div class="registration-form">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1-indicator">
+                    <div class="step-number">1</div>
+                    <span>Basic Info</span>
+                </div>
+                <div class="step inactive" id="step2-indicator">
+                    <div class="step-number">2</div>
+                    <span>Voice Setup</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" id="step1">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="userName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select User Type</label>
+                    <div class="care-types-container">
+                        <div class="care-types" id="care-types">
+                            <!-- Care types will be populated here -->
+                        </div>
+                        <div class="scroll-indicator" id="scroll-indicator">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Scroll to see more options</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div></div> <!-- Spacer -->
+                    <button class="btn btn-primary" id="nextStep1" disabled>
+                        Next: Voice Setup
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Voice Registration -->
+            <div class="form-step" id="step2">
+                <div class="voice-section">
+                    <h3 class="voice-title">Voice Profile Setup</h3>
+                    <p class="voice-description">
+                        Record 5 voice samples to enable personalized voice recognition. 
+                        Speak clearly and naturally in a quiet environment.
+                    </p>
+
+                    <button class="record-btn ready" id="recordBtn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+
+                    <div class="samples-grid" id="samples-grid">
+                        <div class="sample-indicator current" data-sample="1">1</div>
+                        <div class="sample-indicator" data-sample="2">2</div>
+                        <div class="sample-indicator" data-sample="3">3</div>
+                        <div class="sample-indicator" data-sample="4">4</div>
+                        <div class="sample-indicator" data-sample="5">5</div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+
+                    <p id="recording-status">Click the microphone button to start recording sample 1</p>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-secondary" id="backStep2">
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+                    </button>
+                    <button class="btn btn-primary" id="completeRegistration" disabled>
+                        <i class="fas fa-check"></i>
+                        Complete Registration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessages"></div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <!-- Step 1 buttons -->
+        <div class="mobile-step-buttons" id="mobile-step1-buttons">
+            <button class="btn btn-primary" id="mobile-nextStep1" disabled>
+                Next: Voice Setup
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <!-- Step 2 buttons -->
+        <div class="mobile-step-buttons" id="mobile-step2-buttons" style="display: none;">
+            <button class="btn btn-secondary" id="mobile-backStep2">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+            <button class="btn btn-primary" id="mobile-completeRegistration" disabled>
+                <i class="fas fa-check"></i>
+                Complete Registration
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Registration data
+        let registrationData = {
+            name: '',
+            care_type: '',
+            voice_samples: []
+        };
+        
+        let currentStep = 1;
+        let currentSample = 1;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioStream = null;
+        
+        // Care types data
+        const careTypes = {
+            'elderly': {
+                'emoji': '🧓',
+                'title': 'Elderly Care',
+                'description': 'Specialized support for seniors with health management, medication reminders, and daily living assistance.'
+            },
+            'children': {
+                'emoji': '👶',
+                'title': 'Child Care',
+                'description': 'Guidance for parents and caregivers with child development, education, and safety.'
+            },
+            'neurodivergent': {
+                'emoji': '🧠',
+                'title': 'Neurodivergent Support',
+                'description': 'Support for individuals with autism, ADHD, dyslexia and their families.'
+            },
+            'normal': {
+                'emoji': '👤',
+                'title': 'General Care',
+                'description': 'General care support with daily routines, health, wellness, and productivity.'
+            }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCareTypes();
+            setupEventListeners();
+            initializeAudio();
+            setupScrollIndicator();
+        });
+        
+        // Setup care type selection
+        function setupCareTypes() {
+            const careTypesContainer = document.getElementById('care-types');
+            // Try multiple asset path candidates so images load correctly regardless of routing
+            const assetCandidates = ['../assets/', 'assets/', '/static/assets/', '/assets/'];
+            const assetMap = {
+                'elderly': 'elder.png',
+                'children': 'child.png',
+                'neurodivergent': 'neuro.png',
+                'normal': 'normal_character_image.png',
+                'home_automation': 'dashboard-svgrepo-com.svg'
+            };
+
+            function tryAssetPath(imgEl, fileName, idx = 0) {
+                if (!fileName) return;
+                if (idx >= assetCandidates.length) {
+                    // fallback to emoji
+                    imgEl.remove();
+                    return;
+                }
+                const base = assetCandidates[idx];
+                imgEl.src = base + fileName;
+                imgEl.onerror = () => {
+                    // try next candidate
+                    tryAssetPath(imgEl, fileName, idx + 1);
+                };
+            }
+
+            Object.entries(careTypes).forEach(([key, type]) => {
+                const card = document.createElement('div');
+                card.className = 'care-type-card';
+                card.dataset.careType = key;
+
+                const imgFile = assetMap[key];
+                let imgEl = null;
+                if (imgFile) {
+                    imgEl = document.createElement('img');
+                    imgEl.className = 'care-img';
+                    imgEl.alt = type.title;
+                    // will attempt multiple base paths
+                    tryAssetPath(imgEl, imgFile, 0);
+                }
+
+                card.innerHTML = `
+                    <div class="care-media"></div>
+                    <div class="care-title">${type.title}</div>
+                    <div class="care-description" style="font-size:0.82rem;">${type.description}</div>
+                `;
+
+                if (imgEl) {
+                    card.querySelector('.care-media').appendChild(imgEl);
+                } else {
+                    // show emoji fallback
+                    const e = document.createElement('div');
+                    e.className = 'care-emoji';
+                    e.textContent = type.emoji;
+                    card.querySelector('.care-media').appendChild(e);
+                }
+
+                card.addEventListener('click', () => selectCareType(key, card));
+                careTypesContainer.appendChild(card);
+            });
+        }
+
+        // Setup scroll indicator
+        function setupScrollIndicator() {
+            const careTypes = document.getElementById('care-types');
+            const scrollIndicator = document.getElementById('scroll-indicator');
+            
+            if (careTypes && scrollIndicator) {
+                careTypes.addEventListener('scroll', function() {
+                    const isAtBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 10;
+                    if (isAtBottom) {
+                        scrollIndicator.style.opacity = '0';
+                    } else {
+                        scrollIndicator.style.opacity = '1';
+                    }
+                });
+            }
+        }
+        
+        // Select care type
+        function selectCareType(careType, cardElement) {
+            // Remove previous selection
+            document.querySelectorAll('.care-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select current
+            cardElement.classList.add('selected');
+            registrationData.care_type = careType;
+
+            // On touch devices, center the selected card in the scroll area for clarity
+            try {
+                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            } catch (e) {}
+            
+            // Enable next button if name is also filled
+            checkStep1Completion();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            const userNameInput = document.getElementById('userName');
+            const nextStep1Btn = document.getElementById('nextStep1');
+            const backStep2Btn = document.getElementById('backStep2');
+            const recordBtn = document.getElementById('recordBtn');
+            const completeBtn = document.getElementById('completeRegistration');
+            
+            // Mobile buttons
+            const mobileNextStep1Btn = document.getElementById('mobile-nextStep1');
+            const mobileBackStep2Btn = document.getElementById('mobile-backStep2');
+            const mobileCompleteBtn = document.getElementById('mobile-completeRegistration');
+            
+            userNameInput.addEventListener('input', checkStep1Completion);
+            nextStep1Btn.addEventListener('click', goToStep2);
+            backStep2Btn.addEventListener('click', goToStep1);
+            
+            // Mobile button events
+            mobileNextStep1Btn.addEventListener('click', goToStep2);
+            mobileBackStep2Btn.addEventListener('click', goToStep1);
+            mobileCompleteBtn.addEventListener('click', completeRegistration);
+            
+            // Voice recording events
+            recordBtn.addEventListener('click', toggleRecording);
+            
+            completeBtn.addEventListener('click', completeRegistration);
+        }
+        
+        // Check if step 1 is complete
+        function checkStep1Completion() {
+            const userName = document.getElementById('userName').value.trim();
+            const nextBtn = document.getElementById('nextStep1');
+            const mobileNextBtn = document.getElementById('mobile-nextStep1');
+            
+            if (userName && registrationData.care_type) {
+                registrationData.name = userName;
+                nextBtn.disabled = false;
+                mobileNextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+                mobileNextBtn.disabled = true;
+            }
+        }
+        
+        // Navigation between steps
+        function goToStep2() {
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step1-indicator').classList.remove('active');
+            document.getElementById('step1-indicator').classList.add('completed');
+            document.getElementById('step2-indicator').classList.remove('inactive');
+            document.getElementById('step2-indicator').classList.add('active');
+            
+            // Update mobile navigation
+            document.getElementById('mobile-step1-buttons').style.display = 'none';
+            document.getElementById('mobile-step2-buttons').style.display = 'block';
+            
+            currentStep = 2;
+        }
+        
+        function goToStep1() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2-indicator').classList.remove('active');
+            document.getElementById('step2-indicator').classList.add('inactive');
+            document.getElementById('step1-indicator').classList.remove('completed');
+            document.getElementById('step1-indicator').classList.add('active');
+            
+            // Update mobile navigation
+            document.getElementById('mobile-step2-buttons').style.display = 'none';
+            document.getElementById('mobile-step1-buttons').style.display = 'block';
+            
+            currentStep = 1;
+        }
+        
+        // Initialize audio
+        async function initializeAudio() {
+            try {
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                showStatus('Audio access granted. Ready for voice registration.', 'info');
+            } catch (error) {
+                showStatus('Microphone access denied. Voice registration not available.', 'error');
+                console.error('Error accessing microphone:', error);
+            }
+        }
+        
+        // Voice recording
+        function toggleRecording() {
+            if (!audioStream) {
+                showStatus('Microphone access required for voice registration.', 'error');
+                return;
+            }
+            
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+        
+        function startRecording() {
+            isRecording = true;
+            const recordBtn = document.getElementById('recordBtn');
+            const status = document.getElementById('recording-status');
+            
+            recordBtn.classList.remove('ready', 'completed');
+            recordBtn.classList.add('recording');
+            recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            
+            status.textContent = `Recording sample ${currentSample}... Click to stop`;
+            
+            // Simulate recording
+            setTimeout(() => {
+                if (isRecording) {
+                    stopRecording();
+                }
+            }, 5000);
+        }
+        
+        function stopRecording() {
+            isRecording = false;
+            const recordBtn = document.getElementById('recordBtn');
+            const status = document.getElementById('recording-status');
+            
+            recordBtn.classList.remove('recording');
+            recordBtn.classList.add('completed');
+            recordBtn.innerHTML = '<i class="fas fa-check"></i>';
+            
+            // Update sample indicator
+            const currentIndicator = document.querySelector(`[data-sample="${currentSample}"]`);
+            currentIndicator.classList.remove('current');
+            currentIndicator.classList.add('completed');
+            
+            // Add to voice samples
+            registrationData.voice_samples.push({
+                sample: currentSample,
+                timestamp: new Date().toISOString(),
+                data: `simulated_audio_data_${currentSample}`
+            });
+            
+            // Update progress
+            updateProgress();
+            
+            // Move to next sample or complete
+            if (currentSample < 5) {
+                currentSample++;
+                setTimeout(() => {
+                    prepareNextSample();
+                }, 1000);
+                            } else {
+                    // All samples completed
+                    status.textContent = 'All voice samples recorded successfully!';
+                    document.getElementById('completeRegistration').disabled = false;
+                    document.getElementById('mobile-completeRegistration').disabled = false;
+                    showStatus('Voice registration completed! You can now complete the registration.', 'success');
+                }
+        }
+        
+        // Prepare next sample recording
+        function prepareNextSample() {
+            const recordBtn = document.getElementById('recordBtn');
+            const status = document.getElementById('recording-status');
+            const nextIndicator = document.querySelector(`[data-sample="${currentSample}"]`);
+            
+            recordBtn.classList.remove('completed');
+            recordBtn.classList.add('ready');
+            recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            
+            nextIndicator.classList.add('current');
+            status.textContent = `Click the microphone button to start recording sample ${currentSample}`;
+        }
+        
+        // Update progress
+        function updateProgress() {
+            const progress = (registrationData.voice_samples.length / 5) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+        }
+        
+        // Complete registration
+        function completeRegistration() {
+            if (registrationData.voice_samples.length < 5) {
+                showStatus('Please complete all 5 voice samples before registering.', 'error');
+                return;
+            }
+            
+            showStatus('Processing registration...', 'info');
+            
+            socket.emit('register_voice', registrationData);
+        }
+        
+        // Socket events
+        socket.on('registration_result', function(data) {
+            if (data.success) {
+                showStatus(`Registration successful! Welcome, ${registrationData.name}!`, 'success');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                showStatus(`Registration failed: ${data.message}`, 'error');
+            }
+        });
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusContainer = document.getElementById('statusMessages');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
+            
+            statusContainer.innerHTML = '';
+            statusContainer.appendChild(statusDiv);
+            
+            // Auto-remove after 5 seconds for non-success messages
+            if (type !== 'success') {
+                setTimeout(() => {
+                    statusDiv.remove();
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
+

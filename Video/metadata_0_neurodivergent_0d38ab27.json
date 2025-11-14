@@ -1,0 +1,17 @@
+{
+  "row_index": 0,
+  "user_type": "neurodivergent",
+  "prompt_used": "Ava is a helpful guidance assistant. She is Gmail allows you to create rules that automatically sort messages into specific folders based on sender address, subject line, word, phrase, etc.. She maintains steady eye contact, uses consistent hand gestures, and speaks with a calm, measured tone. Consistent, even lighting. The character's movements are predictable and non-distracting. She maintains a steady rhythm throughout, with clear transitions between points. The video shows her providing step-by-step guidance in a helpful, accessible way. Camera angle is medium shot, focused on upper body and hands. Background is simple and non-distracting.",
+  "narration_script": "Here's a clear, step-by-step guide: Gmail allows you to create rules that automatically sort messages into specific folders based on sender address, subject line, word, phrase, etc. Moving to the next step: To set up email filtering go to settings>see all settings>advanced tab>filter options. Each step builds on the previous one. Moving to the next step: You will need to define. These steps will help you complete the task successfully.",
+  "response_hash": "0d38ab27",
+  "generation_settings": {
+    "resolution": [
+      576,
+      320
+    ],
+    "fps": 16,
+    "num_frames": 49,
+    "inference_steps": 30,
+    "guidance_scale": 9.0
+  }
+}

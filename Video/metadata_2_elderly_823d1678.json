@@ -1,0 +1,17 @@
+{
+  "row_index": 2,
+  "user_type": "elderly",
+  "prompt_used": "Ava is a helpful assistant explaining. slow, clear, gentle movements, patient. warm lighting, calm gestures. Medium shot, upper body visible.",
+  "narration_script": "Let me walk you through this carefully. I hope this helps you.",
+  "response_hash": "823d1678",
+  "generation_settings": {
+    "resolution": [
+      576,
+      320
+    ],
+    "fps": 16,
+    "num_frames": 49,
+    "inference_steps": 30,
+    "guidance_scale": 9.0
+  }
+}

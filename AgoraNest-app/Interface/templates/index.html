@@ -1,0 +1,3097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgoraNest</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4169E1;
+            --primary-hover: #0e906f;
+            --secondary-color: #f7f7f8;
+            --border-color: #e5e5e5;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --bg-white: #ffffff;
+            --bg-gray: #f7f7f8;
+            --bg-dark: #202123;
+        }
+
+    /* Brand colors for AgoraNest */
+    .brand { font-weight: 700; display: inline-flex; gap: 0; align-items: baseline; }
+    .brand-agora { color: #1e88ff; /* blue */ }
+    .brand-nest { color: #6b7280; /* grey */ }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-white);
+            color: var(--text-primary);
+            line-height: 1.6;
+            /* allow page to scroll on smaller viewports */
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            /* allow inner columns to shrink so children can scroll on mobile */
+            min-height: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #404040;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: 1px solid #565869;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .new-chat-btn:hover {
+            background: #404040;
+            border-color: #6b7280;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid #404040;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .user-section:hover {
+            background: #404040;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .user-email {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* User Selection Dropdown */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: #2d3748;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid #404040;
+        }
+
+        .user-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown-item:hover {
+            background: #404040;
+        }
+
+        .user-dropdown-item .user-avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+
+        .user-dropdown-item .user-info {
+            flex: 1;
+        }
+
+        .user-dropdown-item .user-name {
+            font-size: 0.8rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .user-dropdown-item .user-email {
+            font-size: 0.7rem;
+        }
+        .register-new-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: 100%;
+            margin-top: 0.5rem;
+            transition: background 0.2s ease;
+        }
+
+        .register-new-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Make the sidebar register button match the Select User background */
+        #register-new-btn {
+            background: #404040 !important; /* same as .user-section hover */
+            color: #fff !important;
+            border: none !important;
+        }
+        #register-new-btn:hover { background: #505050 !important; }
+
+        /* Small delete button for user dropdown entries */
+        .delete-user-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+        }
+        .delete-user-btn:hover { color: #ef4444; background: rgba(239,68,68,0.06); }
+
+        /* Main Chat Area */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-white);
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--bg-gray);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            background: var(--bg-white);
+        }
+
+        .message-group {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .message {
+            max-width: 768px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        /* Assistant avatar image */
+        .assistant-img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; display: block; }
+
+        /* Responsive inline video in chat messages */
+        .chat-video { margin-top: 8px; display: block; }
+        .chat-video-frame { width: 100%; max-width: 420px; height: auto; border-radius: 8px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); display: block; }
+        .chat-video-caption { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
+        @media (max-width: 480px) {
+            .chat-video-frame { max-width: calc(100% - 16px); }
+        }
+
+        .message.user .message-avatar {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: #10a37f;
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 1.5rem;
+            background: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-wrapper {
+            max-width: 768px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.75rem;
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        .text-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: none;
+            min-height: 24px;
+            max-height: 200px;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .text-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-gray);
+            color: var(--text-primary);
+        }
+
+        .action-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .welcome-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+
+        .welcome-message {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .start-chat-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .start-chat-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .chat-header {
+                padding: 1rem;
+            }
+
+            .input-container {
+                padding: 1rem;
+            }
+
+            .message-group {
+                padding: 1rem;
+            }
+
+            .welcome-screen {
+                padding: 1rem;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 1rem;
+            }
+        }
+
+        /* Loading States */
+        .loading-dots {
+            display: inline-flex;
+            gap: 0.25rem;
+        }
+
+        .loading-dots span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: loading 1.4s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loading {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .sidebar ::-webkit-scrollbar-thumb {
+            background: #404040;
+        }
+
+        .sidebar ::-webkit-scrollbar-thumb:hover {
+            background: #565869;
+        }
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 12px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(2,6,23,0.2);
+            overflow: hidden;
+        }
+
+        .modal-header, .modal-footer {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eef2f7;
+            background: #fff;
+        }
+
+        .modal-body {
+            padding: 1rem;
+            background: #fff;
+        }
+
+        .session-actions-menu {
+            position: relative;
+        }
+
+        .session-actions-dropdown {
+            position: absolute;
+            right: 0;
+            top: 28px;
+            background: #2b2b2b;
+            color: #e6e6e6;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+            min-width: 140px;
+            z-index: 1500;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
+
+        .session-actions-dropdown.show {
+            display: block;
+        }
+
+    /* Dashboard / Guardian styles */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media(min-width:900px) { .dashboard-grid { grid-template-columns: 360px 1fr; } }
+    /* make the dashboard area scroll when content exceeds viewport (mobile) */
+    #guardian-dashboard { box-sizing: border-box; z-index:1200; padding-bottom:12px; }
+    #guardian-dashboard .dashboard-grid { align-content: start; }
+    @media(max-width: 900px) {
+        /* allow the dashboard to use available viewport and scroll internally */
+          /* On mobile we remove the internal scrollbar and let the carousel fill a fixed area.
+              Cards will be a fixed height so they align with the header above and the dots below. */
+          #guardian-dashboard { max-height: calc(100vh - 140px); overflow: hidden !important; -webkit-overflow-scrolling: touch; }
+        .main-chat { min-height: 0; overflow: visible; }
+        .chat-messages { min-height: 0; }
+    }
+    /* Guardian carousel styles (mobile) */
+    .guardian-carousel { position: relative; overflow: hidden; padding-bottom: 56px; }
+    .guardian-track { display: flex; transition: transform 300ms ease; will-change: transform; }
+    /* each slide fills viewport width and centers its content vertically to reduce white-space */
+    .guardian-slide { min-width: 100%; box-sizing: border-box; padding: 6px 12px; display:flex; align-items:center; justify-content:center; }
+    /* make panels a fixed, equal height on mobile so all cards match and align with heading/dots */
+    .guardian-slide .panel { padding: 10px 14px; width:100%; max-width:520px; margin:0 auto; box-sizing:border-box; }
+    /* slightly larger icon to anchor the card visually */
+    /* Make guardian icons blend with the card: remove heavy white-box shadow, use subtle border and contain the image */
+    .guardian-icon {
+        width:80px;
+        height:80px;
+        object-fit:contain; /* ensure icon scales inside the box */
+        border-radius:10px;
+        background: #ffffff; /* match the panel card background so the icon blends in */
+        box-shadow: none; /* no shadow so the icon doesn't float */
+        border: none; /* remove border as requested */
+        padding: 6px; /* small breathing room for icon artwork */
+        display: block;
+    }
+    /* place dots bar absolute at bottom of carousel so they sit close to the controls */
+    .guardian-carousel-nav { position:absolute; left:0; right:0; bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; pointer-events:auto; }
+    .guardian-carousel-nav .icon-btn { background: rgba(255,255,255,0.03); }
+    /* Dots */
+    .guardian-dot { width:8px; height:8px; background:#cbd5e1; border-radius:50%; }
+    .guardian-dot.active { background: var(--primary-color); }
+
+    @media(min-width:900px) {
+        /* On larger screens keep original two-column dashboard layout */
+        .guardian-carousel { overflow: visible; }
+        .guardian-track { display: block; }
+        .guardian-slide { min-width: auto; padding-right: 0; }
+        .guardian-carousel-nav { display: none; }
+    }
+    /* Mobile-specific fixed card sizing and spacing (applies under 900px) */
+    @media(max-width:900px) {
+        /* Make the carousel occupy the available area from the heading down to the input/dots area.
+           48vh keeps the card consistent across devices; adjust if you want taller/shorter. */
+        .guardian-carousel { height: 62vh; padding-bottom: 10px; }
+        /* Ensure each slide's panel fills the carousel area so all cards are identical size */
+        .guardian-track, .guardian-slide { height: 100%; }
+        .guardian-slide .panel { height: 100%; display:flex; flex-direction:column; justify-content:space-between; }
+        /* Reduce vertical gap between header and card and between card and dots */
+        #guardian-dashboard > div:first-child { margin-bottom: 10px; }
+    .guardian-carousel-nav { bottom: 1px; }
+        /* Hide any native vertical scrollbar appearance inside the dashboard on mobile */
+        #guardian-dashboard::-webkit-scrollbar { display: none; }
+    }
+    /* Mobile: make big buttons stack and fill width for easier tapping */
+    @media(max-width:768px) {
+        .big-btn { width: 100%; padding: 12px; font-size: 1rem; }
+        .panel { padding: 10px; }
+        .modal-card { max-width: 92%; }
+        #guardian-dashboard { margin: 8px; }
+    /* On small screens show only the dashboard icon and hide the long label */
+    #open-guardian-btn .guardian-label { display: none !important; }
+    #open-guardian-btn .sys-icon { display: none !important; }
+    #open-guardian-btn .mobile-dashboard-icon { display: inline-block !important; width:20px; height:20px; opacity:1 !important; }
+    /* also ensure header mobile icon is visible */
+    #guardian-dashboard h2 .guardian-title-text { display: none !important; }
+    #guardian-dashboard h2 .header-mobile-icon { display: inline-block !important; width:20px; height:20px; opacity:1 !important; }
+    /* header: show small icon and hide long title text */
+    #guardian-dashboard h2 .guardian-title-text { display: none; }
+    #guardian-dashboard h2 .header-mobile-icon { display: inline-block; }
+    /* smaller dashboard header on mobile to fit space */
+    #guardian-dashboard h2 { font-size: 1rem; align-items: center; }
+        /* make the header guardian open button compact and icon-only on mobile */
+        #open-guardian-btn {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            padding: 6px !important;
+            border-radius: 8px !important;
+            width: auto !important;
+            min-width: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        #open-guardian-btn .mobile-dashboard-icon {
+            display: inline-block !important;
+            width: 28px !important;
+            height: 28px !important;
+            margin-right: 0 !important;
+        }
+        /* Make guardian dashboard behave like a mobile panel (fixed) and avoid internal scrolling */
+        #guardian-dashboard {
+            position: fixed !important;
+            top: 82px !important; /* leave the top header visible */
+            left: 8px !important;
+            right: 8px !important;
+            bottom: 92px !important;
+            margin: 0 !important;
+            border-radius: 12px !important;
+            z-index: 1400 !important;
+            background: var(--bg-white) !important;
+            overflow: hidden !important; /* remove internal scrollbar per request */
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        /* ensure the header row inside the dashboard can contain an absolutely positioned close button */
+        #guardian-dashboard > div:first-child { position: relative; }
+
+        /* move the close action to the top-right corner for easy reach */
+        #guardian-dashboard .guardian-actions { position: absolute; right: 12px; top: 12px; z-index: 1450; }
+
+        /* slightly enlarge the close button on mobile for easier tapping */
+        #guardian-dashboard .icon-btn { width:44px; height:44px; }
+    /* hide the close control on small screens (mobile) per request */
+    #guardian-dashboard #guardian-close-btn { display: none !important; }
+    }
+    .panel { background:#fff; border-radius:10px; padding:12px; box-shadow:0 6px 18px rgba(2,6,23,0.06); }
+    .big-btn { background:var(--primary-color); color:white; padding:14px 18px; border-radius:10px; border:none; font-size:1.05rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+    /* icon used inside buttons for a clearer visual */
+    .btn-icon { font-size:1.1rem; line-height:1; display:inline-block; }
+    .big-btn .btn-icon { color: #fff; }
+    .big-btn:focus { outline:3px solid rgba(16,163,127,0.25); }
+    /* Modern Horizontal Autonomy Slider - Mobile First Design */
+    .autonomy-slider { 
+        display: flex; 
+        flex-direction: column;
+        gap: 15px; 
+        width: 100%; 
+        padding: 25px 15px;
+        position: relative;
+    }
+    
+    /* Slider track container with labels */
+    .slider-track-container {
+        position: relative;
+        width: 100%;
+        max-width: 320px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 20px;
+        margin: 0 auto;
+    }
+    
+    /* Top labels */
+    .slider-labels-top {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 15;
+    }
+    
+    /* Bottom labels */
+    .slider-labels-bottom {
+        position: absolute;
+        bottom: 10px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 15;
+    }
+    
+    /* Label styling */
+    .slider-checkpoint-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-align: center;
+        color: #4a5568;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .slider-checkpoint-label.active {
+        color: #1a202c;
+        font-weight: 700;
+        transform: scale(1.1);
+    }
+    
+    /* Main slider track - much thicker */
+    .slider-track {
+        position: relative;
+        width: 100%;
+        height: 16px;
+        background: linear-gradient(to right, #22c55e 0%, #fbbf24 50%, #ef4444 100%);
+        border-radius: 24px;
+        box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        margin: 25px 0;
+    }
+    
+    /* Scale marks on the track - now black */
+    .slider-track::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 4px;
+        height: 28px;
+        background: #1a202c;
+        border-radius: 2px;
+        transform: translateY(-50%);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 8;
+    }
+    
+    .slider-track::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 0;
+        width: 4px;
+        height: 28px;
+        background: #1a202c;
+        border-radius: 2px;
+        transform: translateY(-50%);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 8;
+    }
+    
+    /* Center scale mark - now black */
+    .slider-scale-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 4px;
+        height: 28px;
+        background: #1a202c;
+        border-radius: 2px;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 8;
+    }
+    
+    /* Slider thumb/indicator - larger and more prominent */
+    .slider-thumb {
+        position: absolute;
+        top: 50%;
+        width: 44px;
+        height: 44px;
+        background: white;
+        border: 4px solid #4169E1;
+        border-radius: 50%;
+        transform: translateY(-50%);
+        cursor: grab;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        user-select: none;
+    }
+    
+    .slider-thumb:active {
+        cursor: grabbing;
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .slider-thumb:hover {
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Slider positions with smooth transitions */
+    .slider-thumb[data-position="0"] {
+        left: 0;
+        transform: translateX(0%) translateY(-50%);
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+    
+    .slider-thumb[data-position="1"] {
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        border-color: #fbbf24;
+        color: #fbbf24;
+    }
+    
+    .slider-thumb[data-position="2"] {
+        left: 100%;
+        transform: translateX(-100%) translateY(-50%);
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    /* Control level display - improved spacing */
+    .control-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .control-icon {
+        font-size: 1.3rem;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+    
+    .control-text {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .control-bar-display {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 8px;
+        max-width: 60px;
+    }
+    
+    .control-segment {
+        width: 4px;
+        height: 12px;
+        border-radius: 2px;
+        margin: 0 1px;
+        transition: all 0.3s ease;
+    }
+    
+    .human-segment { 
+        background: #22c55e;
+        box-shadow: 0 1px 3px rgba(34, 197, 94, 0.3);
+    }
+    
+    .ai-segment { 
+        background: #ef4444;
+        box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Mobile optimizations - better responsive design */
+    @media(max-width: 580px) {
+        .autonomy-slider {
+            padding: 20px 10px;
+            gap: 12px;
+        }
+        
+        .slider-track-container {
+            padding: 0 15px;
+            height: 100px;
+            max-width: 280px;
+        }
+        
+        .slider-track {
+            height: 14px;
+            margin: 20px 0;
+        }
+        
+        .slider-thumb {
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
+        }
+        
+        .slider-checkpoint-label {
+            font-size: 0.8rem;
+        }
+        
+        .slider-track::before,
+        .slider-track::after,
+        .slider-scale-center {
+            height: 24px;
+            width: 3px;
+        }
+        
+        .control-indicator {
+            padding: 12px;
+            gap: 8px;
+        }
+        
+        .control-text {
+            font-size: 1rem;
+        }
+        
+        .control-segment {
+            width: 3px;
+            height: 10px;
+        }
+        
+        .control-bar-display {
+            max-width: 50px;
+            margin-left: 6px;
+        }
+    }
+    
+    @media(max-width: 400px) {
+        .slider-checkpoint-label {
+            font-size: 0.75rem;
+        }
+        
+        .slider-track-container {
+            height: 90px;
+            max-width: 240px;
+        }
+        
+        .slider-thumb {
+            width: 34px;
+            height: 34px;
+            font-size: 14px;
+        }
+        
+        .control-bar-display {
+            max-width: 40px;
+            margin-left: 4px;
+        }
+        
+        .control-segment {
+            width: 2px;
+            height: 8px;
+        }
+    }
+    
+    /* Remove the old button-style autonomy options */
+    .autonomy-option { 
+        display: none;
+    }
+    
+    /* Hide the old slider labels */
+    .slider-labels {
+        display: none;
+    }
+    .incident-card { border-left:4px solid #f59e0b; padding:10px; margin-bottom:8px; background:#fff7ed; border-radius:6px; }
+    .goal-row { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+
+        .session-actions-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.6rem 0.9rem;
+            border: none;
+            background: transparent;
+            color: #e6e6e6;
+            cursor: pointer;
+        }
+
+        .session-actions-dropdown button:hover { background: #3b3b3b; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" id="new-chat-btn">
+                    <i class="fas fa-plus"></i>
+                    New Chat
+                </button>
+            </div>
+            
+            <div class="chat-history" id="chat-history">
+                <!-- Chat history will be populated here -->
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-dropdown">
+                    <div class="user-section" id="user-section" onclick="toggleUserDropdown()">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">Select User</div>
+                            <div class="user-email">Choose a user to begin</div>
+                        </div>
+                        <i class="fas fa-chevron-down" style="color: #9ca3af; font-size: 0.75rem;"></i>
+                    </div>
+                    
+                    <div class="user-dropdown-menu" id="user-dropdown-menu">
+                        <!-- User options will be populated here -->
+                    </div>
+                    
+                    <!-- Dynamic user-panel: default shows register button; when user selected shows per-user history and controls -->
+                    <div id="user-panel" style="margin-top:0.75rem;">
+                        <button class="register-new-btn" id="register-new-btn" onclick="window.location.href='/register'">
+                        <span style="font-size:0.95rem;">➕</span>
+                        Register New User
+                    </button>
+                    </div>
+                </div>
+                <!-- Guardian dashboard moved to main chat for easier access on all devices -->
+                <!-- (dashboard will be rendered in the main chat area) -->
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="chat-title" id="chat-title"><span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span></h1>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="big-btn" id="open-guardian-btn" aria-label="Open Care & Safety Hub" title="Open Care & Safety Hub">
+                        <!-- mobile-only provided icon (file: ../assets/dashboard-svgrepo-com.svg) -->
+                        <svg class="mobile-dashboard-icon" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" style="vertical-align:middle;margin-right:8px;fill:currentColor;"><rect x="2" y="2" width="9" height="11" rx="2"></rect><rect x="13" y="2" width="9" height="7" rx="2"></rect><rect x="2" y="15" width="9" height="7" rx="2"></rect><rect x="13" y="11" width="9" height="11" rx="2"></rect></svg>
+                        <svg class="sys-icon" aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;margin-right:8px;fill:currentColor;"><path d="M12 1l8 4v6c0 5-3.8 9.7-8 11-4.2-1.3-8-6-8-11V5l8-4z"></path></svg>
+                        <span class="guardian-label">Care & Safety Hub</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Guardian dashboard (moved into main area) -->
+            <!-- Insert compact, monochrome system SVG icons for a cleaner look -->
+            <svg style="display:none;" aria-hidden="true">
+                <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 1l8 4v6c0 5-3.8 9.7-8 11-4.2-1.3-8-6-8-11V5l8-4z"></path></symbol>
+                <symbol id="icon-doc" viewBox="0 0 24 24"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path></symbol>
+                <symbol id="icon-family" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.98 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"></path></symbol>
+                <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></symbol>
+                <symbol id="icon-alarm" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7v3l-2 2v1h18v-1l-2-2V9a7 7 0 0 0-7-7z"></path></symbol>
+                <symbol id="icon-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></symbol>
+                <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.29 19.71 2.88 18.3 9.18 12 2.88 5.71 4.29 4.29 10.59 10.59 16.88 4.29z"></path></symbol>
+                <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></symbol>
+                <symbol id="icon-replay" viewBox="0 0 24 24"><path d="M12 5V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></symbol>
+                <symbol id="icon-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"></path></symbol>
+            </svg>
+
+            <style>
+                .sys-icon { width:18px; height:18px; vertical-align:middle; margin-right:8px; fill:currentColor; display:inline-block; }
+                #guardian-dashboard .panel h2 { display:flex; align-items:center; gap:8px; }
+                /* header action buttons */
+                .guardian-actions { display:flex; gap:8px; align-items:center; }
+                .icon-btn { background: transparent; border: none; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer; color:var(--text-primary); }
+                .icon-btn:hover { background: rgba(0,0,0,0.04); }
+                /* allow dashboard to stretch and use vertical space */
+                #guardian-dashboard { display:flex; flex-direction:column; margin:12px; min-height:320px; }
+                #guardian-dashboard .dashboard-grid { flex:1; }
+                /* panels that should stretch to use bottom space */
+                #guardian-dashboard .panel.stretch { display:flex; flex-direction:column; justify-content:space-between; }
+            </style>
+
+            <div id="guardian-dashboard" class="panel" role="region" aria-label="Care & Safety Hub" tabindex="-1" aria-hidden="true" style="display:none;margin:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <h2 style="margin:0;font-size:1.25rem;">
+                            <svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-shield"></use></svg>
+                            <svg class="mobile-dashboard-icon header-mobile-icon" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" style="vertical-align:middle;margin-right:8px;fill:currentColor;"><rect x="2" y="2" width="9" height="11" rx="2"></rect><rect x="13" y="2" width="9" height="7" rx="2"></rect><rect x="2" y="15" width="9" height="7" rx="2"></rect><rect x="13" y="11" width="9" height="11" rx="2"></rect></svg>
+                            <span class="guardian-title-text">Care & Safety Hub</span>
+                        </h2>
+                        <div style="font-size:0.9rem;color:#6b7280;">Autonomy, safety checks, and family tools in one place</div>
+                    </div>
+                    <div class="guardian-actions">
+                        <button class="icon-btn" id="guardian-close-btn" aria-label="Close Care & Safety Hub" title="Close"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-close"></use></svg></button>
+                    </div>
+                </div>
+
+                <!-- Mobile-friendly guardian carousel: shows one feature card per view and allows swipe/arrow navigation -->
+                <div style="margin-top:8px;" class="guardian-carousel" id="guardian-carousel">
+                    <div class="guardian-track" id="guardian-track">
+                        <!-- Slide 0: Incident Ribbon -->
+                        <div class="guardian-slide" data-slide="0">
+                            <div class="panel stretch" style="margin-bottom:8px;display:flex;flex-direction:column;align-items:center;">
+                                <img src="/assets/dashboard/IncidentRibbon.jpg" alt="Incident" class="guardian-icon" />
+                                <h3 style="margin:8px 0 6px 0;font-size:1rem;">Incident Ribbon</h3>
+                                <div id="incident-ribbon" aria-live="polite" style="width:100%;">
+                                    <!-- incident cards inserted here -->
+                                </div>
+                                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:center;">
+                                    <button class="big-btn" id="weekly-digest"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-doc"></use></svg>Weekly Digest</button>
+                                    <button class="big-btn" id="open-family-hub" style="background:#6b7280;"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-family"></use></svg>Family Hub</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 1: Parental Controls & SOS -->
+                        <div class="guardian-slide" data-slide="1">
+                            <div class="panel" style="display:flex;flex-direction:column;align-items:center;">
+                                <img src="/assets/dashboard/ParentalControls&SOS.png" alt="Parental Controls" class="guardian-icon" />
+                                <h3 style="margin:8px 0 6px 0;font-size:1rem;">Parental Controls & SOS</h3>
+                                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;justify-content:center;width:100%;">
+                                            <!-- make both controls equal-width on the row by giving them flex:1 -->
+                                            <button id="sos-button" class="big-btn" style="background:#ef4444;flex:1;min-width:140px;max-width:420px;">
+                                                <i class="fas fa-bell btn-icon" aria-hidden="true"></i>
+                                                <span>SOS</span>
+                                            </button>
+
+                                            <button id="open-parental-settings" class="big-btn" style="background:#10a37f;flex:1;min-width:140px;max-width:420px;">
+                                                <i class="fas fa-shield-alt btn-icon" aria-hidden="true"></i>
+                                                <span>Parental Settings</span>
+                                            </button>
+                                        </div>
+                                <div style="font-size:0.9rem;color:#6b7280;text-align:center;">All alerts respect consent and minimize data. Parents choose what to receive.</div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2: Autonomy Control -->
+                        <div class="guardian-slide" data-slide="2">
+                            <div class="panel" style="display:flex;flex-direction:column;align-items:center;">
+                                <img src="/assets/dashboard/AutonomyControl.jpeg" alt="Autonomy" class="guardian-icon" />
+                                <h3 style="margin:8px 0 6px 0;font-size:1rem;">Autonomy Slider</h3>
+                                <div id="autonomy-card-desc" style="font-size:0.9rem;color:#374151;margin-bottom:8px;text-align:center;">Choose how the assistant works: Manual = you lead, Assisted = guided prompts, Autonomous = safe proactive help.</div>
+                                <div id="autonomy-card" aria-label="Autonomy control" style="min-width:220px; width:100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: Teach Me -->
+                        <div class="guardian-slide" data-slide="3">
+                            <div class="panel stretch" style="display:flex;flex-direction:column;align-items:center;margin-bottom:8px;">
+                                <img src="/assets/dashboard/TeachMeVideoGuidance.jpg" alt="Teach Me" class="guardian-icon" />
+                                <h3 style="margin:8px 0 6px 0;font-size:1rem;"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-play"></use></svg>Teach Me — Video Guidance</h3>
+                                <div id="teachme-area" style="width:100%;text-align:center;">
+                                    <p style="color:#374151;">Short interactive guidance videos for children, elders, and neurodivergent users. Captions and text summaries included.</p>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                                        <button class="big-btn" id="open-teachme"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-play"></use></svg>Open Teach Me</button>
+                                        <button class="big-btn" id="replay-guide" style="background:#6b7280;"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-replay"></use></svg>Replay Last</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 4: Family Hub -->
+                        <div class="guardian-slide" data-slide="4">
+                            <div class="panel stretch" style="display:flex;flex-direction:column;align-items:center;">
+                                <img src="/assets/dashboard/FamilyHub.png" alt="Family Hub" class="guardian-icon" />
+                                <h3 style="margin:8px 0 6px 0;font-size:1rem;"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-family"></use></svg>Family Hub</h3>
+                                <div id="family-hub" style="min-height:120px;width:100%;">
+                                    <!-- family goals, messages -->
+                                </div>
+                                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                                    <button class="big-btn" id="add-goal"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-plus"></use></svg>Add Goal</button>
+                                    <button class="big-btn" id="suggest-change" style="background:#6b7280;"><svg class="sys-icon" aria-hidden="true"><use xlink:href="#icon-pen"></use></svg>Suggest Change</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="guardian-carousel-nav" aria-hidden="false">
+                        <div id="guardian-dots" style="display:flex;gap:6px;align-items:center;justify-content:center;flex:1;">
+                            <!-- dots inserted by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h1 class="welcome-title">Welcome to <span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span></h1>
+                    <p class="welcome-subtitle">
+                        Your personalized AI companion for comprehensive care support. 
+                        Select a user from the sidebar to get started with tailored assistance.
+                    </p>
+                    <div class="welcome-message" id="welcome-message">
+                        Click the user dropdown in the sidebar to select a user
+                    </div>
+                    <button class="start-chat-btn" onclick="focusOnUserSelection()">
+                        <i class="fas fa-users"></i>
+                        Open User Selection
+                    </button>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <div class="input-box">
+                        <textarea 
+                            class="text-input" 
+                            id="text-input" 
+                            placeholder="Message AgoraNest..."
+                            rows="1"
+                            disabled
+                        ></textarea>
+                        <div class="input-actions">
+                            <button class="action-btn" id="voice-btn" title="Voice input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="action-btn primary" id="send-btn" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-card" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <strong id="modal-title">Modal</strong>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- dynamic -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- dynamic -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Global variables
+        let currentUser = null;
+    let currentSession = null; // { session_id, created_at, messages: [] }
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioStream = null;
+        let lastResponse = '';
+        
+        // DOM elements
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const chatMessages = document.getElementById('chat-messages');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const textInput = document.getElementById('text-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceBtn = document.getElementById('voice-btn');
+        const chatTitle = document.getElementById('chat-title');
+        const userSection = document.getElementById('user-section');
+        const userDropdownMenu = document.getElementById('user-dropdown-menu');
+        const chatHistoryContainer = document.getElementById('chat-history');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+            initializeAudio();
+            setupAutoResize();
+            setupMobileMenu();
+            setupUserDropdown();
+            renderUserPanel();
+        });
+
+        // Modal helpers
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
+
+        function openModal(title, bodyHtml, footerHtml) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = bodyHtml || '';
+            modalFooter.innerHTML = footerHtml || '';
+            modalOverlay.classList.add('show');
+        }
+
+        // Modal-based alert/confirm/prompt helpers (return Promises)
+        function modalAlert(message) {
+            return new Promise(resolve => {
+                openModal('Notice', `<div style="padding:8px 0;">${escapeHtml(message)}</div>`, `<div style="display:flex;justify-content:flex-end;"><button class="register-new-btn" id="modal-ok">OK</button></div>`);
+                setTimeout(()=>{ document.getElementById('modal-ok').addEventListener('click', ()=>{ closeModalImmediate(); resolve(); }); },10);
+            });
+        }
+
+        function modalConfirm(message) {
+            return new Promise(resolve => {
+                openModal('Confirm', `<div style="padding:8px 0;">${escapeHtml(message)}</div>`, `<div style="display:flex;justify-content:flex-end;gap:8px;"><button class="register-new-btn" id="modal-cancel">Cancel</button><button class="register-new-btn" id="modal-yes">Yes</button></div>`);
+                setTimeout(()=>{
+                    document.getElementById('modal-cancel').addEventListener('click', ()=>{ closeModalImmediate(); resolve(false); });
+                    document.getElementById('modal-yes').addEventListener('click', ()=>{ closeModalImmediate(); resolve(true); });
+                },10);
+            });
+        }
+
+        function modalPrompt(label, placeholder) {
+            return new Promise(resolve => {
+                openModal(label, `<div style="display:flex;flex-direction:column;gap:8px;"><input id="modal-prompt-input" placeholder="${escapeHtml(placeholder||'')}" style="width:100%;padding:8px;border-radius:6px;border:1px solid #e6e6e6;"/></div>`, `<div style="display:flex;justify-content:flex-end;gap:8px;"><button class="register-new-btn" id="modal-prompt-cancel">Cancel</button><button class="register-new-btn" id="modal-prompt-ok">OK</button></div>`);
+                setTimeout(()=>{
+                    document.getElementById('modal-prompt-cancel').addEventListener('click', ()=>{ closeModalImmediate(); resolve(null); });
+                    document.getElementById('modal-prompt-ok').addEventListener('click', ()=>{ const v=document.getElementById('modal-prompt-input').value; closeModalImmediate(); resolve(v); });
+                    document.getElementById('modal-prompt-input').focus();
+                },10);
+            });
+        }
+
+        function closeModal(e) {
+            if (e && e.target && e.target.id === 'modal-overlay') {
+                modalOverlay.classList.remove('show');
+            }
+        }
+
+        function closeModalImmediate() { modalOverlay.classList.remove('show'); }
+        
+        // Mobile menu toggle
+        function setupMobileMenu() {
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+        
+        // Auto-resize textarea
+        function setupAutoResize() {
+            textInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+            });
+        }
+        
+        // Setup user dropdown
+        function setupUserDropdown() {
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.user-dropdown')) {
+                    userDropdownMenu.classList.remove('show');
+                }
+            });
+        }
+
+        // Toggle user dropdown
+        function toggleUserDropdown() {
+            userDropdownMenu.classList.toggle('show');
+        }
+
+        // Focus on user selection
+        function focusOnUserSelection() {
+            // Load users then show dropdown so the register option or users are visible
+            loadUsers().then(users => {
+                userDropdownMenu.classList.add('show');
+                userDropdownMenu.style.maxHeight = '320px';
+                userDropdownMenu.style.overflowY = 'auto';
+                if (window.innerWidth <= 768) sidebar.classList.add('open');
+            });
+        }
+
+        // Load registered users (returns a Promise resolving to the users array)
+        function loadUsers() {
+            return fetch('/api/users')
+                .then(response => response.json())
+                .then(users => {
+                    if (!users || users.length === 0) {
+                        const stored = getStoredUsers();
+                        if (stored.length === 0) {
+                            userDropdownMenu.innerHTML = `
+                                <div class="user-dropdown-item" onclick="window.location.href='/register'">
+                                    <div class="user-avatar">
+                                        <span style="font-size:0.95rem;">➕</span>
+                                    </div>
+                                    <div class="user-info">
+                                        <div class="user-name">No users registered</div>
+                                        <div class="user-email">Click to register first user</div>
+                                    </div>
+                                </div>
+                            `;
+                            return [];
+                        }
+                        users = stored;
+                    } else {
+                        // persist backend users locally for offline use
+                        saveStoredUsers(users);
+                    }
+
+                    renderUserDropdown(users);
+                    return users;
+                })
+                .catch(error => {
+                    console.error('Error loading users from backend, using local fallback:', error);
+                    const stored = getStoredUsers();
+                    if (stored.length === 0) {
+                        userDropdownMenu.innerHTML = `
+                            <div class="user-dropdown-item" onclick="window.location.href='/register'">
+                                <div class="user-avatar">
+                                    <span style="font-size:0.95rem;">➕</span>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">No users registered</div>
+                                    <div class="user-email">Click to register first user</div>
+                                </div>
+                            </div>
+                        `;
+                        return [];
+                    }
+                    renderUserDropdown(stored);
+                    return stored;
+                });
+        }
+
+    function renderUserDropdown(users) {
+                    userDropdownMenu.innerHTML = '';
+                    users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'user-dropdown-item';
+                        userItem.style.display = 'flex';
+                        userItem.style.justifyContent = 'space-between';
+                        userItem.style.alignItems = 'center';
+                        userItem.innerHTML = `
+                            <div style="display:flex;gap:0.75rem;align-items:center;flex:1;">
+                                <div class="user-avatar">
+                                    ${user.emoji || '👤'}
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">${user.name}</div>
+                                    <div class="user-email">${user.care_description || user.care_type || ''}</div>
+                                </div>
+                            </div>
+                            <div style="margin-left:8px;display:flex;gap:6px;align-items:center;">
+                                <button class="delete-user-btn" title="Delete user" aria-label="Delete user"> <i class="fas fa-trash"></i> </button>
+                            </div>
+                        `;
+
+                        // clicking the main area selects the user
+                        userItem.querySelector('.user-avatar').addEventListener('click', () => selectUser(user));
+                        userItem.querySelector('.user-info').addEventListener('click', () => selectUser(user));
+
+                        // delete handler
+                        const delBtn = userItem.querySelector('.delete-user-btn');
+                        delBtn.addEventListener('click', async (ev) => {
+                            ev.stopPropagation();
+                            const ok = await modalConfirm(`Delete user "${user.name}"? This will remove local data (sessions & history).`);
+                            if (!ok) return;
+                            await deleteUser(user.user_id);
+                        });
+
+                        userDropdownMenu.appendChild(userItem);
+                    });
+            // ensure dropdown is scrollable when long
+            userDropdownMenu.style.maxHeight = '320px';
+            userDropdownMenu.style.overflowY = 'auto';
+        }
+
+        // Delete a user locally and attempt backend delete
+        async function deleteUser(userId) {
+            try {
+                // remove stored user entry list
+                const users = getStoredUsers().filter(u => u.user_id !== userId);
+                saveStoredUsers(users);
+
+                // remove sessions and history for this user
+                localStorage.removeItem(`careai_sessions_${userId}`);
+                localStorage.removeItem(`careai_history_${userId}`);
+                localStorage.removeItem(`careai_pass_${userId}`);
+                sessionStorage.removeItem(`careai_unlocked_${userId}`);
+
+                // if the deleted user was current, clear selection
+                if (currentUser && currentUser.user_id === userId) {
+                    currentUser = null;
+                    currentSession = null;
+                    chatMessages.innerHTML = '';
+                    welcomeScreen.style.display = 'flex';
+                    chatTitle.textContent = 'CareAI Assistant';
+                }
+
+                // try backend delete (best-effort)
+                try {
+                    await fetch(`/api/users/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+                } catch (e) { /* ignore network errors */ }
+
+                // re-render dropdown and panel
+                renderUserDropdown(users);
+                renderUserPanel();
+            } catch (e) {
+                console.error('Failed to delete user', e);
+                await modalAlert('Unable to delete user. See console for details.');
+            }
+        }
+
+        function openUserSettings() {
+            if (!currentUser) return;
+            const hasPassword = !!getChatPasswordHash(currentUser.user_id);
+            const unlocked = sessionStorage.getItem(`careai_unlocked_${currentUser.user_id}`) === '1';
+
+            const body = `
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="font-weight:600;">Security</div>
+                    <div style="font-size:0.95rem;color:#374151;">Password lock protects this user's chats in this browser. It is stored locally.</div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
+                        <button class="register-new-btn" id="settings-set-pwd">${hasPassword ? 'Change Password' : 'Set Password'}</button>
+                        <button class="register-new-btn" id="settings-remove-pwd" style="background:transparent;color:#ef4444;">${hasPassword ? 'Remove Password' : 'Disabled'}</button>
+                        <button class="register-new-btn" id="settings-unlock" style="background:transparent;color:#10a37f;">${unlocked ? 'Unlocked (this session)' : 'Unlock for session'}</button>
+                    </div>
+                </div>
+            `;
+
+            const footer = `
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+                    <button class="register-new-btn" onclick="closeModalImmediate()">Close</button>
+                </div>
+            `;
+
+            openModal('Settings', body, footer);
+
+            // Hook buttons after open
+            setTimeout(() => {
+                const setBtn = document.getElementById('settings-set-pwd');
+                const removeBtn = document.getElementById('settings-remove-pwd');
+                const unlockBtn = document.getElementById('settings-unlock');
+
+                if (setBtn) setBtn.addEventListener('click', () => {
+                    openSetPasswordModal();
+                });
+
+                if (removeBtn) removeBtn.addEventListener('click', () => {
+                    if (!getChatPasswordHash(currentUser.user_id)) { modalAlert('No password set'); return; }
+                    modalConfirm('Remove password for this user?').then(ok => {
+                        if (!ok) return;
+                        localStorage.removeItem(`careai_pass_${currentUser.user_id}`);
+                        sessionStorage.removeItem(`careai_unlocked_${currentUser.user_id}`);
+                        modalAlert('Password removed').then(()=>{ renderUserPanel(); closeModalImmediate(); });
+                    });
+                });
+
+                if (unlockBtn) unlockBtn.addEventListener('click', () => {
+                    if (!getChatPasswordHash(currentUser.user_id)) { modalAlert('No password set'); return; }
+                    openUnlockModal();
+                });
+            }, 20);
+        }
+        
+        // Select user and open their most recent session (or create one)
+        function selectUser(user) {
+            currentUser = user;
+            
+            // Update UI — keep header consistently branded
+            chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+            userSection.innerHTML = `
+                <div class="user-avatar">
+                    ${user.emoji}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-email">${user.care_description}</div>
+                </div>
+                <i class="fas fa-chevron-down" style="color: #9ca3af; font-size: 0.75rem;"></i>
+            `;
+            
+            // Hide welcome screen and show chat
+            welcomeScreen.style.display = 'none';
+            
+            // Load this user's sessions
+            const sessions = getUserSessions(currentUser.user_id);
+            if (sessions.length === 0) {
+                // create initial session
+                const newSession = createNewSession();
+                sessions.unshift(newSession);
+                saveUserSessions(currentUser.user_id, sessions);
+            }
+
+            // open most recent session (first element)
+            currentSession = sessions[0];
+
+            // Render chat messages for session
+            chatMessages.innerHTML = '';
+            currentSession.messages.forEach(entry => addMessage(entry.type, entry.text, true, new Date(entry.timestamp)));
+
+            // Enable input unless chat is locked (effective: password set and not unlocked this browser session)
+            if (isChatLockedEffective(currentUser.user_id)) {
+                textInput.disabled = true;
+                sendBtn.disabled = true;
+                addMessage('assistant', '🔒 This chat is locked. Unlock in Settings to continue.');
+            } else {
+            textInput.disabled = false;
+            sendBtn.disabled = false;
+            }
+            
+            // Focus on input
+            textInput.focus();
+            
+            // Close dropdown and mobile sidebar
+            userDropdownMenu.classList.remove('show');
+            if (window.innerWidth <= 768) sidebar.classList.remove('open');
+
+            // Render user panel (sessions list etc)
+            renderUserPanel();
+        }
+        
+        // Initialize audio
+        async function initializeAudio() {
+            try {
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Audio access granted');
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+            }
+        }
+        
+        // Voice recording
+        voiceBtn.addEventListener('click', function() {
+            if (!currentUser || !audioStream) {
+                modalAlert('Please select a user and grant microphone access first.');
+                return;
+            }
+            
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+        
+        function startRecording() {
+            isRecording = true;
+            voiceBtn.innerHTML = '⏹️';
+            voiceBtn.style.color = '#ef4444';
+            
+            // Simulate recording
+            setTimeout(() => {
+                if (isRecording) {
+                    stopRecording();
+                }
+            }, 5000);
+        }
+        
+        function stopRecording() {
+            isRecording = false;
+            voiceBtn.innerHTML = '🎤';
+            voiceBtn.style.color = '';
+            
+            // Simulate voice processing
+            const simulatedText = "Hello, I need help with my medication schedule";
+            processInput(simulatedText);
+        }
+        
+        // Text input
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey && !textInput.disabled && textInput.value.trim()) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        sendBtn.addEventListener('click', sendMessage);
+        
+        function sendMessage() {
+            const text = textInput.value.trim();
+            if (!text || !currentUser) return;
+            
+            processInput(text);
+            textInput.value = '';
+            textInput.style.height = 'auto';
+        }
+        
+        function processInput(text) {
+            addMessage('user', text);
+
+            // Save to current session
+            if (currentUser && currentSession) {
+                currentSession.messages.push({ type: 'user', text: text, timestamp: new Date().toISOString() });
+                saveCurrentSession();
+                renderUserHistoryList();
+            }
+            
+            // Show typing indicator
+            const typingIndicator = addTypingIndicator();
+            
+            socket.emit('voice_input', {
+                text: text,
+                user_id: currentUser.user_id
+            });
+            
+            // Remove typing indicator when response comes
+            setTimeout(() => {
+                if (typingIndicator && typingIndicator.parentNode) {
+                    typingIndicator.remove();
+                }
+            }, 1000);
+        }
+        
+        // Add message to chat
+        function addMessage(type, text, skipSave = false, fixedTimestamp = null) {
+            const messageGroup = document.createElement('div');
+            messageGroup.className = 'message-group';
+            const time = fixedTimestamp ? new Date(fixedTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let avatarHtml = '';
+            if (type === 'user') {
+                // Use a specialized avatar for certain care types (child, neurodivergent), otherwise fall back to generic
+                try {
+                    const ct = (currentUser && currentUser.care_type) ? String(currentUser.care_type).toLowerCase() : '';
+                    if (ct && (ct.includes('neurodivergent') || ct.includes('neuro'))) {
+                        // local neurodivergent illustration (filename contains spaces/parentheses -> URL-encoded)
+                        avatarHtml = '<img src="/assets/abstract-creative-illustration%20%281%29.jpg" alt="User" class="assistant-img" />';
+                    } else if (ct && ct.includes('child')) {
+                        avatarHtml = '<img src="/assets/child_chatIcon.png" alt="User" class="assistant-img" />';
+                    } else {
+                        avatarHtml = '👤';
+                    }
+                } catch (e) {
+                    avatarHtml = '👤';
+                }
+            } else {
+                avatarHtml = '<img src="/assets/normal_character_image.png" alt="Assistant" class="assistant-img" />';
+            }
+            messageGroup.innerHTML = `
+                <div class="message ${type}">
+                    <div class="message-avatar">
+                        ${avatarHtml}
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">${text}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageGroup);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // If this is an assistant message and the selected user is a child-type,
+            // append the guidance video and caption (responsive via CSS added earlier).
+            try {
+                const ct2 = (currentUser && currentUser.care_type) ? String(currentUser.care_type).toLowerCase() : '';
+                if (type === 'assistant' && ct2 && ct2.includes('child')) {
+                    const videoHtml = `
+                        <div class="chat-video">
+                            <video class="chat-video-frame" controls preload="metadata" src="/assets/3dd4f0cd-12db-41ce-832f-1b671d57947d.mp4" aria-label="Guidance video">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="chat-video-caption">refer this video for more details</div>
+                        </div>
+                    `;
+                    const contentEl = messageGroup.querySelector('.message-content');
+                    if (contentEl) {
+                        // append after the text block
+                        contentEl.insertAdjacentHTML('beforeend', videoHtml);
+                        // ensure scroll to show new content
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to append guidance video', e);
+            }
+            
+            if (!skipSave && currentUser && currentSession) {
+                currentSession.messages.push({ type: type, text: text, timestamp: (new Date()).toISOString() });
+                saveCurrentSession();
+                renderUserHistoryList();
+            }
+        }
+        
+        // Add typing indicator
+        function addTypingIndicator() {
+            const messageGroup = document.createElement('div');
+            messageGroup.className = 'message-group';
+            
+            messageGroup.innerHTML = `
+                <div class="message assistant">
+                    <div class="message-avatar">
+                        <img src="/assets/normal_character_image.png" alt="Assistant" class="assistant-img" />
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <div class="loading-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageGroup);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageGroup;
+        }
+        
+        // Update chat history sidebar
+        function updateChatHistory() {
+            chatHistoryContainer.innerHTML = '';
+            
+            // Group by date
+            const groupedHistory = groupChatHistoryByDate(chatHistory);
+            
+            Object.entries(groupedHistory).forEach(([date, messages]) => {
+                const dateHeader = document.createElement('div');
+                dateHeader.style.cssText = 'padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #9ca3af; font-weight: 500;';
+                dateHeader.textContent = formatDate(date);
+                chatHistoryContainer.appendChild(dateHeader);
+                
+                messages.forEach((msg, index) => {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-item';
+                    chatItem.innerHTML = `
+                        <i class="chat-item-icon fas fa-${msg.type === 'user' ? 'user' : 'robot'}"></i>
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${msg.text.substring(0, 30)}${msg.text.length > 30 ? '...' : ''}
+                        </span>
+                    `;
+                    chatItem.addEventListener('click', () => scrollToMessage(index));
+                    chatHistoryContainer.appendChild(chatItem);
+                });
+            });
+        }
+        
+        function groupChatHistoryByDate(history) {
+            const grouped = {};
+            history.forEach(msg => {
+                const date = msg.timestamp.toDateString();
+                if (!grouped[date]) {
+                    grouped[date] = [];
+                }
+                grouped[date].push(msg);
+            });
+            return grouped;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return 'Today';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Yesterday';
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+        
+        function scrollToMessage(index) {
+            const messageGroups = document.querySelectorAll('.message-group');
+            if (messageGroups[index]) {
+                messageGroups[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // New chat button: create a new session for the selected user and open it
+        newChatBtn.addEventListener('click', function() {
+            if (currentUser) {
+                // Create a new session object and persist it for this user
+                const sessions = getUserSessions(currentUser.user_id);
+                const newSession = createNewSession();
+                sessions.unshift(newSession);
+                saveUserSessions(currentUser.user_id, sessions);
+
+                // Open the new session (replace current chat view)
+                currentSession = newSession;
+                chatMessages.innerHTML = '';
+                welcomeScreen.style.display = 'none';
+                // keep branded header
+                chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+
+                // If the chat is locked for this user, disable input and show lock notice
+                if (isChatLockedEffective(currentUser.user_id)) {
+                    textInput.disabled = true;
+                    sendBtn.disabled = true;
+                    addMessage('assistant', '🔒 This chat is locked. Unlock in Settings to continue.');
+                } else {
+                    textInput.disabled = false;
+                    sendBtn.disabled = false;
+                    // Starter assistant message
+                    addMessage('assistant', `Hello ${currentUser.name}! 👋 How can I help you today?`);
+                }
+
+                // Refresh panel to show the new session at the top
+                renderUserPanel();
+            } else {
+                // No user selected — show welcome screen and prompt to pick/register
+                welcomeScreen.style.display = 'flex';
+                // show branded title
+                chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+                userSection.innerHTML = `
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">Select User</div>
+                        <div class="user-email">Choose a user to begin</div>
+                    </div>
+                    <i class="fas fa-chevron-down" style="color: #9ca3af; font-size: 0.75rem;"></i>
+                `;
+
+                textInput.disabled = true;
+                sendBtn.disabled = true;
+            }
+        });
+        
+        // Socket events
+        socket.on('voice_response', function(data) {
+            if (data.error) {
+                addMessage('assistant', `Sorry, I encountered an error: ${data.error}`);
+                return;
+            }
+            
+            lastResponse = data.output_text;
+            addMessage('assistant', data.output_text);
+            
+            // Auto-play response
+            speakText(data.output_text);
+        });
+        
+        // Text-to-speech
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                const voices = speechSynthesis.getVoices();
+                const femaleVoice = voices.find(voice => 
+                    voice.name.includes('Female') || 
+                    voice.name.includes('Samantha') ||
+                    voice.name.includes('Victoria')
+                );
+                if (femaleVoice) {
+                    utterance.voice = femaleVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // LocalStorage-based Users and Per-User History
+        function getStoredUsers() {
+            try {
+                const raw = localStorage.getItem('careai_users');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error('Error reading users from localStorage', e);
+                return [];
+            }
+        }
+
+        function saveStoredUsers(users) {
+            localStorage.setItem('careai_users', JSON.stringify(users));
+        }
+
+        function getUserHistory(userId) {
+            try {
+                const raw = localStorage.getItem(`careai_history_${userId}`);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error('Error reading history', e);
+                return [];
+            }
+        }
+
+        function saveUserHistory(userId, history) {
+            localStorage.setItem(`careai_history_${userId}`, JSON.stringify(history));
+        }
+
+        // Session-based storage: each user has sessions array, each session has messages
+        function getUserSessions(userId) {
+            try {
+                const raw = localStorage.getItem(`careai_sessions_${userId}`);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error('Error reading sessions', e);
+                return [];
+            }
+        }
+
+        function saveUserSessions(userId, sessions) {
+            localStorage.setItem(`careai_sessions_${userId}`, JSON.stringify(sessions));
+        }
+
+        function createNewSession(title) {
+            const defaultTitle = `Conversation - ${new Date().toLocaleString()}`;
+            return { session_id: 's_' + Date.now(), title: title || defaultTitle, created_at: new Date().toISOString(), messages: [] };
+        }
+
+        function saveCurrentSession() {
+            if (!currentUser || !currentSession) return;
+            const sessions = getUserSessions(currentUser.user_id);
+            // replace or add by session_id
+            const idx = sessions.findIndex(s => s.session_id === currentSession.session_id);
+            if (idx >= 0) {
+                sessions[idx] = currentSession;
+            } else {
+                sessions.unshift(currentSession);
+            }
+            // ensure newest-first ordering
+            sessions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            saveUserSessions(currentUser.user_id, sessions);
+        }
+
+        function isChatLockedEffective(userId) {
+            // locked if password exists AND not unlocked in this browser session
+            const hasPassword = !!getChatPasswordHash(userId);
+            const unlocked = sessionStorage.getItem(`careai_unlocked_${userId}`) === '1';
+            return hasPassword && !unlocked;
+        }
+
+        // Render dynamic user panel: sessions are shown at the top area (#chat-history)
+        // and settings/controls are shown in the footer (#user-panel).
+        function renderUserPanel() {
+            const userPanel = document.getElementById('user-panel');
+            const sidebarSessions = document.getElementById('chat-history');
+            userPanel.innerHTML = '';
+            sidebarSessions.innerHTML = ''; // we'll render sessions here at the top
+
+            if (!currentUser) {
+                // show register button in the footer
+                userPanel.innerHTML = `
+                    <button class="register-new-btn" id="register-new-btn" onclick="window.location.href='/register'">
+                        <i class="fas fa-user-plus"></i>
+                        Register New User
+                    </button>
+                `;
+                return;
+            }
+
+            // Render sessions in the top area
+            const sessions = getUserSessions(currentUser.user_id).slice().sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            if (sessions.length === 0) {
+                sidebarSessions.innerHTML = `<div style="color:#9ca3af;padding:0.75rem;">No sessions yet. Click + New to start.</div>`;
+            } else {
+                sessions.forEach(session => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding:0.6rem;border-bottom:1px solid #2b2b2b;color:#e6e6e6;font-size:0.95rem;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+                    const preview = session.messages.length ? session.messages[session.messages.length-1].text.substring(0,80) : 'New session';
+                    item.innerHTML = `
+                        <div style="flex:1;overflow:hidden;">
+                            <div style="font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${session.title}</div>
+                            <div style="font-size:0.82rem;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}</div>
+                            <div style="font-size:0.72rem;color:#6b7280;">${new Date(session.created_at).toLocaleString()}</div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <button class="register-new-btn" style="background:transparent;color:#9ca3af;padding:0.25rem 0.5rem;font-size:0.75rem;">Open</button>
+                            <button class="register-new-btn" style="background:transparent;color:#f59e0b;padding:0.25rem 0.5rem;font-size:0.75rem;">Rename</button>
+                        </div>
+                    `;
+                    const openBtn = item.querySelectorAll('button')[0];
+                    const renameBtn = item.querySelectorAll('button')[1];
+                    openBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        currentSession = session;
+                        chatMessages.innerHTML = '';
+                        session.messages.forEach(entry => addMessage(entry.type, entry.text, true, new Date(entry.timestamp)));
+                        // keep branded header
+                        chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+                    });
+                    // replace rename with three-dot actions menu
+                    const actionsWrapper = document.createElement('div');
+                    actionsWrapper.className = 'session-actions-menu';
+                    actionsWrapper.innerHTML = `
+                        <button class="action-btn" title="More" style="color:#9ca3af;padding:6px;"><i class="fas fa-ellipsis-h"></i></button>
+                        <div class="session-actions-dropdown">
+                            <button class="session-open">Open</button>
+                            <button class="session-rename">Rename</button>
+                            <button class="session-delete">Delete</button>
+                        </div>
+                    `;
+
+                    const actionBtn = actionsWrapper.querySelector('button');
+                    const dropdown = actionsWrapper.querySelector('.session-actions-dropdown');
+                    actionBtn.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        // close others
+                        document.querySelectorAll('.session-actions-dropdown').forEach(d => { if (d !== dropdown) d.classList.remove('show'); });
+                        dropdown.classList.toggle('show');
+                    });
+
+                    // close dropdown when clicking outside
+                    document.addEventListener('click', (ev) => {
+                        if (!ev.target.closest('.session-actions-menu')) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+
+                    // bind actions
+                    actionsWrapper.querySelector('.session-open').addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        dropdown.classList.remove('show');
+                        currentSession = session;
+                        chatMessages.innerHTML = '';
+                        session.messages.forEach(entry => addMessage(entry.type, entry.text, true, new Date(entry.timestamp)));
+                        chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+                    });
+
+                    actionsWrapper.querySelector('.session-rename').addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        dropdown.classList.remove('show');
+                        openRenameModal(session, sessions);
+                    });
+
+                    actionsWrapper.querySelector('.session-delete').addEventListener('click', async (ev) => {
+                        ev.stopPropagation();
+                        dropdown.classList.remove('show');
+                        const ok = await modalConfirm('Delete this session? This cannot be undone.');
+                        if (!ok) return;
+                        const idx2 = sessions.findIndex(s => s.session_id === session.session_id);
+                        if (idx2 >= 0) sessions.splice(idx2, 1);
+                        saveUserSessions(currentUser.user_id, sessions);
+                        // if deleted session was current, pick first or clear
+                        if (currentSession && currentSession.session_id === session.session_id) {
+                            if (sessions.length > 0) {
+                                currentSession = sessions[0];
+                                chatMessages.innerHTML = '';
+                                currentSession.messages.forEach(entry => addMessage(entry.type, entry.text, true, new Date(entry.timestamp)));
+                                chatTitle.textContent = currentSession.title;
+                            } else {
+                                currentSession = null;
+                                chatMessages.innerHTML = '';
+                                chatTitle.textContent = currentUser.name + ' - ' + currentUser.care_description;
+                                welcomeScreen.style.display = 'flex';
+                            }
+                        }
+                        renderUserPanel();
+                    });
+
+                    // replace right side with actionsWrapper
+                    const rightCol = item.querySelector('div[style*="display:flex;flex-direction:column"]');
+                    if (rightCol) {
+                        rightCol.parentNode.replaceChild(actionsWrapper, rightCol);
+                    }
+
+                    // clicking the whole item opens the session (mobile-friendly)
+                    item.addEventListener('click', (ev) => {
+                        // avoid opening when clicking the actions button
+                        if (ev.target.closest('.session-actions-menu') || ev.target.closest('.session-actions-dropdown')) return;
+                        currentSession = session;
+                        chatMessages.innerHTML = '';
+                        session.messages.forEach(entry => addMessage(entry.type, entry.text, true, new Date(entry.timestamp)));
+                        chatTitle.innerHTML = '<span class="brand"><span class="brand-agora">Agora</span><span class="brand-nest">Nest</span></span>';
+                        // close dropdown and mobile sidebar for narrower screens
+                        userDropdownMenu.classList.remove('show');
+                        if (window.innerWidth <= 768) sidebar.classList.remove('open');
+                    });
+
+                    sidebarSessions.appendChild(item);
+                });
+            }
+
+            // Render settings in footer
+            const locked = isChatLocked(currentUser.user_id);
+            userPanel.innerHTML = `
+                <div style="display:flex;gap:8px;align-items:center;margin-top:0.6rem;">
+                    <button class="register-new-btn" style="flex:1;" id="open-settings-btn">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button class="register-new-btn" style="width:48px;padding:0.5rem;" title="Lock chat" id="lock-btn">
+                        <i class="fas ${locked ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('lock-btn').addEventListener('click', function() {
+                if (getChatPasswordHash(currentUser.user_id)) {
+                    modalConfirm('Remove password for this user?').then(ok => {
+                        if (!ok) return;
+                        localStorage.removeItem(`careai_pass_${currentUser.user_id}`);
+                        sessionStorage.removeItem(`careai_unlocked_${currentUser.user_id}`);
+                        modalAlert('Password removed').then(()=>renderUserPanel());
+                    });
+                } else {
+                    // open modal to set password instead of prompt
+                    openSetPasswordModal();
+                }
+            });
+
+            document.getElementById('open-settings-btn').addEventListener('click', openUserSettings);
+            // New session control handled via session list buttons; no floating '+ New' here.
+        }
+
+        // legacy: not used — sessions now render in renderUserPanel into #chat-history
+        function renderUserHistoryList() {
+            // kept for compatibility but delegate to renderUserPanel
+            renderUserPanel();
+        }
+
+        async function clearUserHistory() {
+            if (!currentUser) return;
+            const ok = await modalConfirm('Clear history for ' + currentUser.name + '?');
+            if (!ok) return;
+            // clear sessions
+            saveUserSessions(currentUser.user_id, []);
+            renderUserPanel();
+        }
+
+        // Chat lock: simple password protection stored per-user (hashed)
+        function setChatPassword(userId, password) {
+            // returns a promise that resolves to the hash
+            return sha256(password).then(hash => {
+                localStorage.setItem(`careai_pass_${userId}`, hash);
+                return hash;
+            });
+        }
+
+        function getChatPasswordHash(userId) {
+            return localStorage.getItem(`careai_pass_${userId}`) || null;
+        }
+
+        function isChatLocked(userId) {
+            return !!getChatPasswordHash(userId);
+        }
+
+        function toggleChatLock(userId) {
+            if (isChatLocked(userId)) {
+                // unlock (remove password)
+                modalConfirm('Remove password lock for this user?').then(ok => {
+                    if (!ok) return;
+                    localStorage.removeItem(`careai_pass_${userId}`);
+                    modalAlert('Chat unlocked').then(()=>renderUserPanel());
+                });
+            } else {
+                // open password modal
+                if (currentUser && currentUser.user_id === userId) {
+                    openSetPasswordModal();
+                } else {
+                    // fallback: ask to navigate to user and set password
+                    modalAlert('Select the user in sidebar and open Settings to set a password.');
+                }
+            }
+        }
+
+        // Modals for rename / password set / unlock
+        function openRenameModal(sessionObj, sessionsList) {
+            const body = `
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <label style="font-weight:600;">New title</label>
+                    <input id="rename-input" value="${escapeHtml(sessionObj.title)}" style="width:100%;padding:0.6rem;border:1px solid #e6e6e6;border-radius:8px;" />
+                </div>
+            `;
+            const footer = `
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+                    <button class="register-new-btn" id="rename-cancel">Cancel</button>
+                    <button class="register-new-btn" id="rename-save">Save</button>
+                </div>
+            `;
+            openModal('Rename Session', body, footer);
+            setTimeout(() => {
+                document.getElementById('rename-cancel').addEventListener('click', closeModalImmediate);
+                document.getElementById('rename-save').addEventListener('click', async () => {
+                    const v = document.getElementById('rename-input').value.trim();
+                    if (!v) { await modalAlert('Title cannot be empty'); return; }
+                    sessionObj.title = v;
+                    saveUserSessions(currentUser.user_id, sessionsList);
+                    renderUserPanel();
+                    closeModalImmediate();
+                });
+            }, 10);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function (m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; });
+        }
+
+        function openSetPasswordModal() {
+            const body = `
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <label style="font-weight:600;">New password</label>
+                    <input id="new-pwd" type="password" style="width:100%;padding:0.6rem;border:1px solid #e6e6e6;border-radius:8px;" />
+                    <div style="font-size:0.85rem;color:#6b7280;">Password is stored locally (hashed) to lock the chat in this browser.</div>
+                </div>
+            `;
+            const footer = `
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+                    <button class="register-new-btn" onclick="closeModalImmediate()">Cancel</button>
+                    <button class="register-new-btn" id="set-pwd-save">Save</button>
+                </div>
+            `;
+            openModal('Set Password', body, footer);
+            setTimeout(() => {
+                document.getElementById('set-pwd-save').addEventListener('click', () => {
+                    const v = document.getElementById('new-pwd').value;
+                    if (!v || v.length < 4) { modalAlert('Password must be at least 4 characters'); return; }
+                    setChatPassword(currentUser.user_id, v).then(() => {
+                        modalAlert('Password set. Chat locked.').then(()=>{ renderUserPanel(); closeModalImmediate(); });
+                    });
+                });
+            }, 10);
+        }
+
+        function openUnlockModal() {
+            const body = `
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <label style="font-weight:600;">Enter password to unlock</label>
+                    <input id="unlock-pwd" type="password" style="width:100%;padding:0.6rem;border:1px solid #e6e6e6;border-radius:8px;" />
+                </div>
+            `;
+            const footer = `
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+                    <button class="register-new-btn" onclick="closeModalImmediate()">Cancel</button>
+                    <button class="register-new-btn" id="unlock-pwd-save">Unlock</button>
+                </div>
+            `;
+            openModal('Unlock Chat', body, footer);
+            setTimeout(() => {
+                document.getElementById('unlock-pwd-save').addEventListener('click', () => {
+                    const v = document.getElementById('unlock-pwd').value;
+                    if (!v) return modalAlert('Enter password');
+                    const hash = getChatPasswordHash(currentUser.user_id);
+                    if (!hash) { modalAlert('No password set'); return; }
+                    sha256(v).then(h => {
+                        if (h === hash) {
+                            sessionStorage.setItem(`careai_unlocked_${currentUser.user_id}`, '1');
+                            modalAlert('Chat unlocked for this session').then(()=>{
+                                textInput.disabled = false;
+                                sendBtn.disabled = false;
+                                renderUserPanel();
+                                closeModalImmediate();
+                            });
+                        } else {
+                            modalAlert('Incorrect password');
+                        }
+                    });
+                });
+            }, 10);
+        }
+
+        // --- Guardian Feature Implementations ---
+        // Analytics event helper (local-first events)
+        function analyticsEvent(name, details) {
+            const ev = { name, details, ts: new Date().toISOString() };
+            try {
+                const arr = JSON.parse(localStorage.getItem('careai_events') || '[]');
+                arr.push(ev);
+                localStorage.setItem('careai_events', JSON.stringify(arr));
+            } catch (e) { console.error('analytics save failed', e); }
+            console.log('ANALYTICS', ev);
+        }
+
+        // Autonomy slider (Manual / Assisted / Autonomous)
+        const AUTONOMY = { MANUAL: 'manual', ASSISTED: 'assisted', AUTONOMOUS: 'autonomous' };
+        let currentAutonomy = localStorage.getItem('careai_autonomy') || AUTONOMY.ASSISTED;
+
+        function renderAutonomyControl(container) {
+            if (!container) return;
+            
+            const modes = [
+                {
+                    key: 'manual',
+                    title: 'Manual',
+                    subtitle: '',
+                    icon: '👤',
+                    humanControl: 100,
+                    aiControl: 0,
+                    position: 0
+                },
+                {
+                    key: 'assisted',
+                    title: '',
+                    subtitle: 'Assisted',
+                    icon: '🤝',
+                    humanControl: 60,
+                    aiControl: 40,
+                    position: 1
+                },
+                {
+                    key: 'autonomous',
+                    title: 'Autonomous',
+                    subtitle: '',
+                    icon: '🤖',
+                    humanControl: 20,
+                    aiControl: 80,
+                    position: 2
+                }
+            ];
+
+            const currentMode = modes.find(m => m.key === currentAutonomy) || modes[1];
+            const humanSegments = Math.round(currentMode.humanControl / 20);
+            const aiSegments = Math.round(currentMode.aiControl / 20);
+
+            container.innerHTML = `
+                <div class="autonomy-slider">
+                    <!-- Slider Track with Checkpoint Labels -->
+                    <div class="slider-track-container">
+                        <!-- Top Labels -->
+                        <div class="slider-labels-top">
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'manual' ? 'active' : ''}">${modes[0].title}</div>
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'assisted' ? 'active' : ''}">${modes[1].title}</div>
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'autonomous' ? 'active' : ''}">${modes[2].title}</div>
+                        </div>
+                        
+                        <!-- Slider Track -->
+                        <div class="slider-track" id="slider-track">
+                            <div class="slider-scale-center"></div>
+                            <div class="slider-thumb" 
+                                 id="autonomy-thumb"
+                                 data-position="${currentMode.position}">
+                                ${currentMode.icon}
+                            </div>
+                        </div>
+                        
+                        <!-- Bottom Labels -->
+                        <div class="slider-labels-bottom">
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'manual' ? 'active' : ''}">${modes[0].subtitle}</div>
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'assisted' ? 'active' : ''}">${modes[1].subtitle}</div>
+                            <div class="slider-checkpoint-label ${currentAutonomy === 'autonomous' ? 'active' : ''}">${modes[2].subtitle}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add enhanced touch/drag functionality to slider
+            setupSliderInteraction();
+        }
+
+        function setAutonomyMode(mode) {
+            currentAutonomy = mode;
+            localStorage.setItem('careai_autonomy', mode);
+            analyticsEvent('autonomy_changed', { level: currentAutonomy });
+            
+            // Re-render the autonomy control to update the UI
+            renderAutonomyControl(document.getElementById('autonomy-card'));
+        }
+
+        function setupSliderInteraction() {
+            const thumb = document.getElementById('autonomy-thumb');
+            const track = document.getElementById('slider-track');
+            
+            if (!thumb || !track) return;
+            
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+            let thumbStartX = 0;
+            
+            // Define the three snap positions (left, center, right)
+            const snapPositions = [0, 0.5, 1];
+            const modes = ['manual', 'assisted', 'autonomous'];
+            
+            // Touch events
+            thumb.addEventListener('touchstart', handleStart, { passive: false });
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', handleEnd, { passive: false });
+            
+            // Mouse events
+            thumb.addEventListener('mousedown', handleStart);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            
+            function handleStart(e) {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                
+                const trackRect = track.getBoundingClientRect();
+                const thumbRect = thumb.getBoundingClientRect();
+                thumbStartX = (thumbRect.left + thumbRect.width / 2 - trackRect.left) / trackRect.width;
+                
+                thumb.style.transition = 'none';
+                document.body.style.userSelect = 'none';
+            }
+            
+            function handleMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                
+                currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const deltaX = currentX - startX;
+                const trackRect = track.getBoundingClientRect();
+                const deltaPercentage = deltaX / trackRect.width;
+                
+                let newPosition = thumbStartX + deltaPercentage;
+                newPosition = Math.max(0, Math.min(1, newPosition));
+                
+                // Update thumb position smoothly during drag
+                updateThumbPosition(newPosition);
+                
+                // Determine which mode we're closest to
+                const closestSnapIndex = findClosestSnap(newPosition);
+                const newMode = modes[closestSnapIndex];
+                
+                // Visual feedback during drag - update labels
+                updateActiveLabels(newMode);
+            }
+            
+            function handleEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                thumb.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                document.body.style.userSelect = '';
+                
+                // Snap to nearest position
+                const trackRect = track.getBoundingClientRect();
+                const deltaX = currentX - startX;
+                const deltaPercentage = deltaX / trackRect.width;
+                let finalPosition = thumbStartX + deltaPercentage;
+                finalPosition = Math.max(0, Math.min(1, finalPosition));
+                
+                const closestSnapIndex = findClosestSnap(finalPosition);
+                const newMode = modes[closestSnapIndex];
+                
+                // Only update if mode changed
+                if (newMode !== currentAutonomy) {
+                    setAutonomyMode(newMode);
+                } else {
+                    // Snap back to current position
+                    updateThumbPosition(snapPositions[modes.indexOf(currentAutonomy)]);
+                }
+            }
+            
+            function findClosestSnap(position) {
+                let closest = 0;
+                let minDistance = Math.abs(position - snapPositions[0]);
+                
+                for (let i = 1; i < snapPositions.length; i++) {
+                    const distance = Math.abs(position - snapPositions[i]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closest = i;
+                    }
+                }
+                
+                return closest;
+            }
+            
+            function updateThumbPosition(percentage) {
+                const leftPercent = percentage * 100;
+                thumb.style.left = `${leftPercent}%`;
+                
+                // Update thumb appearance based on position
+                if (percentage < 0.33) {
+                    thumb.style.borderColor = '#22c55e';
+                    thumb.style.color = '#22c55e';
+                } else if (percentage < 0.67) {
+                    thumb.style.borderColor = '#fbbf24';
+                    thumb.style.color = '#fbbf24';
+                } else {
+                    thumb.style.borderColor = '#ef4444';
+                    thumb.style.color = '#ef4444';
+                }
+            }
+            
+            function updateActiveLabels(mode) {
+                document.querySelectorAll('.slider-checkpoint-label').forEach(label => {
+                    const isActive = (
+                        (mode === 'manual' && (label.textContent === 'Manual' || label.textContent === 'You Lead')) ||
+                        (mode === 'assisted' && (label.textContent === 'Assisted' || label.textContent === 'Guided')) ||
+                        (mode === 'autonomous' && (label.textContent === 'Autonomous' || label.textContent === 'AI Lead'))
+                    );
+                    label.classList.toggle('active', isActive);
+                });
+            }
+            
+            // Click on track to jump to position
+            track.addEventListener('click', (e) => {
+                if (e.target === thumb || isDragging) return;
+                
+                const trackRect = track.getBoundingClientRect();
+                const relativeX = e.clientX - trackRect.left;
+                const percentage = relativeX / trackRect.width;
+                
+                const closestSnapIndex = findClosestSnap(percentage);
+                const newMode = modes[closestSnapIndex];
+                
+                setAutonomyMode(newMode);
+            });
+            
+            // Keyboard navigation
+            thumb.addEventListener('keydown', (e) => {
+                let newIndex = modes.indexOf(currentAutonomy);
+                
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    newIndex = Math.max(0, newIndex - 1);
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    newIndex = Math.min(modes.length - 1, newIndex + 1);
+                }
+                
+                if (newIndex !== modes.indexOf(currentAutonomy)) {
+                    setAutonomyMode(modes[newIndex]);
+                }
+            });
+            
+            // Make thumb focusable for keyboard users
+            thumb.setAttribute('tabindex', '0');
+            thumb.setAttribute('role', 'slider');
+            thumb.setAttribute('aria-valuemin', '0');
+            thumb.setAttribute('aria-valuemax', '2');
+            thumb.setAttribute('aria-valuenow', modes.indexOf(currentAutonomy));
+            thumb.setAttribute('aria-label', 'Autonomy Level Slider');
+        }
+
+        // Incident ribbon and local-first logs
+        function logIncident(type, summary, data) {
+            const incidents = JSON.parse(localStorage.getItem('careai_incidents') || '[]');
+            const entry = { id: 'i_' + Date.now(), type, summary, data: data || {}, ts: new Date().toISOString(), handled: false };
+            incidents.unshift(entry);
+            localStorage.setItem('careai_incidents', JSON.stringify(incidents));
+            analyticsEvent('incident_logged', { type, summary });
+            renderIncidentRibbon();
+            return entry;
+        }
+
+        function renderIncidentRibbon() {
+            const ribbon = document.getElementById('incident-ribbon');
+            ribbon.innerHTML = '';
+            const incidents = JSON.parse(localStorage.getItem('careai_incidents') || '[]');
+            if (incidents.length === 0) {
+                ribbon.innerHTML = '<div style="color:#6b7280;">No incidents</div>';
+                return;
+            }
+            incidents.forEach(i => {
+                const card = document.createElement('div');
+                card.className = 'incident-card';
+                card.innerHTML = `<div style="font-weight:600;">${escapeHtml(i.summary)}</div><div style="font-size:0.9rem;color:#6b7280;margin-top:6px;">${new Date(i.ts).toLocaleString()}</div>`;
+                const actions = document.createElement('div');
+                actions.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
+                const accept = document.createElement('button'); accept.className='big-btn'; accept.textContent='Accept';
+                const explain = document.createElement('button'); explain.className='big-btn'; explain.style.background='#6b7280'; explain.textContent='Explain';
+                const forward = document.createElement('button'); forward.className='big-btn'; forward.style.background='#f59e0b'; forward.textContent='Forward';
+                const teach = document.createElement('button'); teach.className='big-btn'; teach.style.background='#10a37f'; teach.textContent='Teach';
+                actions.appendChild(accept); actions.appendChild(explain); actions.appendChild(forward); actions.appendChild(teach);
+                card.appendChild(actions);
+                ribbon.appendChild(card);
+
+                accept.addEventListener('click', () => { i.handled = true; saveIncidents(incidents); analyticsEvent('incident_accepted', { id: i.id }); renderIncidentRibbon(); });
+                explain.addEventListener('click', () => { openExplainModal(i); analyticsEvent('incident_explain', { id: i.id }); });
+                forward.addEventListener('click', () => { openForwardModal(i); analyticsEvent('incident_forward', { id: i.id }); });
+                teach.addEventListener('click', () => { openTeachMeModal(i); analyticsEvent('incident_teach', { id: i.id }); });
+            });
+        }
+
+        function saveIncidents(arr) { localStorage.setItem('careai_incidents', JSON.stringify(arr)); }
+
+        function openExplainModal(incident) {
+            const body = `<div><strong>Why did the AI do this?</strong><p style="color:#374151;">${escapeHtml(incident.summary)}</p><p style="color:#6b7280;">Plain language explanation: The assistant flagged this because it matched a safety rule or expressed confusion and the system attempted mitigation.</p></div>`;
+            const footer = `<div style="display:flex;justify-content:flex-end;"><button class="register-new-btn" onclick="closeModalImmediate()">Close</button></div>`;
+            openModal('Why this happened', body, footer);
+        }
+
+        function openForwardModal(incident) {
+            const body = `<div style="display:flex;flex-direction:column;gap:8px;"><label>Forward to (email or phone):</label><input id='forward-to' style='padding:8px;border-radius:6px;border:1px solid #e6e6e6;' /></div>`;
+            const footer = `<div style="display:flex;justify-content:flex-end;gap:8px;"><button class="register-new-btn" onclick="closeModalImmediate()">Cancel</button><button class="register-new-btn" id='forward-send'>Send</button></div>`;
+            openModal('Forward Incident', body, footer);
+                setTimeout(() => {
+                document.getElementById('forward-send').addEventListener('click', async () => {
+                    const to = document.getElementById('forward-to').value.trim();
+                    if (!to) return modalAlert('Enter recipient');
+                    // store forward as minimal metadata
+                    analyticsEvent('incident_forwarded', { id: incident.id, to });
+                    closeModalImmediate();
+                    await modalAlert('Forward recorded (simulated)');
+                });
+            }, 20);
+        }
+
+        // --- Teach Me / Video Guidance ---
+        let lastGuide = null;
+        function openTeachMeModal(incident) {
+            // If an incident was provided, pick a tailored short guide; otherwise use generic
+            const guideId = incident ? 'guide_' + incident.type : 'guide_generic';
+            lastGuide = guideId;
+            const videoHtml = `
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <video id="teachme-video" controls style="width:100%;border-radius:8px;" aria-label="Guidance video">
+                        <source src="/static/guides/${guideId}.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div style="font-size:0.95rem;color:#374151;">Captions:</div>
+                    <div id="teachme-captions" style="background:#f3f4f6;padding:8px;border-radius:6px;max-height:120px;overflow:auto;">Loading captions...</div>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;"><button class="register-new-btn" id="replay-btn">Replay</button><button class="register-new-btn" id="send-parent-btn">Send to Parent/Caregiver</button></div>
+                </div>
+            `;
+            openModal('Teach Me', videoHtml, '');
+            setTimeout(() => {
+                // load captions and summary (local-first fallback)
+                document.getElementById('teachme-captions').textContent = 'Short summary: This video explains what to do when the system detects confusion or safety issues.';
+                document.getElementById('replay-btn').addEventListener('click', () => {
+                    const v = document.getElementById('teachme-video'); if (v) { v.currentTime = 0; v.play(); analyticsEvent('guide_replayed', { guideId }); }
+                });
+                document.getElementById('send-parent-btn').addEventListener('click', async () => {
+                    // minimal consent flow: only allow if parental consent present
+                    const cfg = JSON.parse(localStorage.getItem('careai_parental') || '{}');
+                    if (!cfg.consent) {
+                        const open = await modalConfirm('No parental consent set. Open Parental Settings to grant consent?');
+                        if (open) openParentalSettings();
+                        return;
+                    }
+                    analyticsEvent('guide_sent_parent', { guideId });
+                    await modalAlert('Guide sent to caregiver (simulated).');
+                });
+            }, 30);
+        }
+
+        function openTeachMe() { openTeachMeModal(null); }
+
+        // --- Family Hub ---
+        function renderFamilyHub() {
+            const el = document.getElementById('family-hub');
+            const data = JSON.parse(localStorage.getItem('careai_family') || '[]');
+            el.innerHTML = '';
+            if (data.length === 0) { el.innerHTML = '<div style="color:#6b7280;">No goals yet. Create a shared goal for the family.</div>'; return; }
+            data.forEach(g => {
+                const row = document.createElement('div'); row.className='goal-row';
+                row.innerHTML = `<div><strong>${escapeHtml(g.title)}</strong><div style="font-size:0.9rem;color:#6b7280;">${g.progress}% complete</div></div><div><button class='register-new-btn' style='background:transparent;color:#10a37f;'>Suggest</button></div>`;
+                el.appendChild(row);
+            });
+        }
+
+        async function addFamilyGoal() {
+            const title = await modalPrompt('Add Goal', 'e.g., Read 30 mins');
+            if (!title) return;
+            const arr = JSON.parse(localStorage.getItem('careai_family') || '[]');
+            arr.push({ id: 'g_'+Date.now(), title, progress: 0 });
+            localStorage.setItem('careai_family', JSON.stringify(arr));
+            analyticsEvent('family_goal_added', { title });
+            renderFamilyHub();
+        }
+
+        // Suggest change opens a small modal to propose edits
+        function openSuggestChange() {
+            const body = `<div style='display:flex;flex-direction:column;gap:8px;'><label>Propose change</label><textarea id='suggest-text' style='width:100%;height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6;'></textarea></div>`;
+            const footer = `<div style='display:flex;justify-content:flex-end;gap:8px;'><button class='register-new-btn' onclick='closeModalImmediate()'>Cancel</button><button class='register-new-btn' id='suggest-send'>Send</button></div>`;
+            openModal('Suggest Change', body, footer);
+            setTimeout(()=>{ document.getElementById('suggest-send').addEventListener('click', async ()=>{ const v=document.getElementById('suggest-text').value.trim(); if(!v) return; analyticsEvent('family_suggestion', { text:v }); closeModalImmediate(); await modalAlert('Suggestion recorded'); }); },20);
+        }
+
+        // --- Parental Settings ---
+        function openParentalSettings() {
+            const cfg = JSON.parse(localStorage.getItem('careai_parental') || '{}');
+            const body = `<div style='display:flex;flex-direction:column;gap:8px;'><label><input type='checkbox' id='consent-share' ${cfg.consent ? 'checked' : ''}/> Allow sharing summaries with parents</label><label>Alert frequency<select id='alert-frequency'><option value='instant'>Instant</option><option value='daily'>Daily</option><option value='weekly'>Weekly</option></select></label><label>Blocked categories (comma separated)<input id='blocked-cats' style='width:100%;padding:6px;border-radius:6px;border:1px solid #e6e6e6;' value='${(cfg.blocked||[]).join(',')}'/></label></div>`;
+            const footer = `<div style='display:flex;justify-content:flex-end;gap:8px;'><button class='register-new-btn' onclick='closeModalImmediate()'>Cancel</button><button class='register-new-btn' id='parent-save'>Save</button></div>`;
+            openModal('Parental Settings', body, footer);
+            setTimeout(()=>{ document.getElementById('parent-save').addEventListener('click', ()=>{ const consent = document.getElementById('consent-share').checked; const freq = document.getElementById('alert-frequency').value; const cats = document.getElementById('blocked-cats').value.split(',').map(s=>s.trim()).filter(Boolean); const cfg2 = { consent, freq, blocked: cats }; localStorage.setItem('careai_parental', JSON.stringify(cfg2)); analyticsEvent('parental_settings_saved', cfg2); closeModalImmediate(); }); },20);
+        }
+
+        // --- SOS ---
+        function triggerSOS() {
+            // one-tap escalate: collect minimal context and optionally location
+            const payload = { ts: new Date().toISOString(), user: currentUser ? currentUser.user_id : null, last_actions: getRecentActions(5) };
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    payload.location = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                    analyticsEvent('sos_activated', payload);
+                    await modalAlert('SOS activated and caregiver notified (simulated).');
+                }, async (err)=>{ analyticsEvent('sos_activated', payload); await modalAlert('SOS activated (location unavailable).'); });
+            } else {
+                analyticsEvent('sos_activated', payload);
+                modalAlert('SOS activated (no location API)');
+            }
+        }
+
+        function getRecentActions(n) {
+            try { const ev = JSON.parse(localStorage.getItem('careai_events')||'[]'); return ev.slice(-n); } catch(e){return[];}
+        }
+
+        // --- Weekly Digest ---
+        function generateWeeklyDigest() {
+            const incidents = JSON.parse(localStorage.getItem('careai_incidents')||'[]').slice(0,50);
+            const family = JSON.parse(localStorage.getItem('careai_family')||'[]');
+            const summary = { ts:new Date().toISOString(), incidents: incidents.map(i=>({id:i.id, type:i.type, summary:i.summary, ts:i.ts})), goals: family };
+            localStorage.setItem('careai_weekly_digest_'+Date.now(), JSON.stringify(summary));
+            analyticsEvent('weekly_digest_generated', { count_incidents: incidents.length, goals: family.length });
+            alert('Weekly digest created (local).');
+        }
+
+        // --- UI wiring ---
+    // Focus and keyboard handling for Care & Safety Hub (open / close / restore focus)
+    const guardianEl = document.getElementById('guardian-dashboard');
+    const guardianCloseBtn = document.getElementById('guardian-close-btn');
+    let _guardianPrevFocus = null;
+    function _guardianKeyHandler(e) {
+        if (e.key === 'Escape') closeGuardian();
+    }
+
+    function openGuardian() {
+        _guardianPrevFocus = document.activeElement;
+        guardianEl.style.display = 'block';
+        guardianEl.setAttribute('aria-hidden', 'false');
+        // ensure dashboard is focusable and focus top control for keyboard users
+        if (guardianCloseBtn) guardianCloseBtn.focus(); else guardianEl.focus();
+        welcomeScreen.style.display = 'none';
+        analyticsEvent('guardian_opened', {});
+        renderAutonomyControl(document.getElementById('autonomy-card'));
+        renderIncidentRibbon();
+        renderFamilyHub();
+    // initialize carousel controls for mobile view
+    try { initGuardianCarousel(); } catch (e) { console.warn('carousel init failed', e); }
+        document.addEventListener('keydown', _guardianKeyHandler);
+        // reflect state on the guardian toggle button for accessibility and styling
+        if (typeof openGuardianBtn !== 'undefined' && openGuardianBtn) {
+            openGuardianBtn.classList.add('active');
+            openGuardianBtn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function closeGuardian() {
+        guardianEl.style.display = 'none';
+        guardianEl.setAttribute('aria-hidden', 'true');
+        document.removeEventListener('keydown', _guardianKeyHandler);
+        analyticsEvent('guardian_closed_via_close', {});
+        // restore previous focus
+        try { if (_guardianPrevFocus && typeof _guardianPrevFocus.focus === 'function') _guardianPrevFocus.focus(); } catch(e){}
+        // show welcome only when no user selected
+        welcomeScreen.style.display = (currentUser ? 'none' : 'flex');
+        // reflect state on the guardian toggle button for accessibility and styling
+        if (typeof openGuardianBtn !== 'undefined' && openGuardianBtn) {
+            openGuardianBtn.classList.remove('active');
+            openGuardianBtn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    // Guardian toggle: clicking the dashboard icon will open or close the guardian
+    const openGuardianBtn = document.getElementById('open-guardian-btn');
+    function isGuardianOpen() {
+        return guardianEl && guardianEl.style.display !== 'none' && guardianEl.getAttribute('aria-hidden') === 'false';
+    }
+    function toggleGuardian() {
+        if (isGuardianOpen()) closeGuardian(); else openGuardian();
+    }
+    if (openGuardianBtn) {
+        openGuardianBtn.addEventListener('click', toggleGuardian);
+        openGuardianBtn.setAttribute('aria-controls', 'guardian-dashboard');
+        openGuardianBtn.setAttribute('aria-expanded', String(isGuardianOpen()));
+    }
+    if (guardianCloseBtn) guardianCloseBtn.addEventListener('click', closeGuardian);
+        document.getElementById('open-teachme').addEventListener('click', ()=>{ openTeachMeModal(null); });
+        document.getElementById('replay-guide').addEventListener('click', ()=>{ if (lastGuide) openTeachMeModal({type:lastGuide}); else openTeachMeModal(null); });
+        document.getElementById('add-goal').addEventListener('click', addFamilyGoal);
+        document.getElementById('suggest-change').addEventListener('click', openSuggestChange);
+        document.getElementById('open-family-hub').addEventListener('click', ()=>{ openModal('Family Hub', document.getElementById('family-hub').innerHTML, '<div style="display:flex;justify-content:flex-end;"><button class="register-new-btn" onclick="closeModalImmediate()">Close</button></div>'); });
+        document.getElementById('open-parental-settings').addEventListener('click', openParentalSettings);
+    document.getElementById('sos-button').addEventListener('click', async ()=>{ const ok = await modalConfirm('Activate SOS? This will notify your caregiver.'); if (ok) triggerSOS(); });
+    document.getElementById('weekly-digest').addEventListener('click', async ()=>{ await generateWeeklyDigest(); });
+
+        // Accessibility: large focusable buttons for key actions
+        document.querySelectorAll('.big-btn').forEach(b=>{ b.tabIndex=0; b.addEventListener('keyup', (e)=>{ if(e.key==='Enter' || e.key===' ') b.click(); }); });
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // --- Guardian Carousel (mobile swipe / navigation) ---
+        let _guardianCarousel = { track: null, slides: [], current: 0, dotsContainer: null, isDragging: false, startX: 0, currentTranslate: 0, prevTranslate: 0, animationID: 0 };
+
+        function initGuardianCarousel() {
+            const carousel = document.getElementById('guardian-carousel');
+            if (!carousel) return;
+            const track = document.getElementById('guardian-track');
+            const slides = Array.from(track.querySelectorAll('.guardian-slide'));
+            const prevBtn = document.getElementById('guardian-prev');
+            const nextBtn = document.getElementById('guardian-next');
+            const dots = document.getElementById('guardian-dots');
+
+            // store
+            _guardianCarousel.track = track;
+            _guardianCarousel.slides = slides;
+            _guardianCarousel.dotsContainer = dots;
+            _guardianCarousel.current = 0;
+
+            // build dots
+            dots.innerHTML = '';
+            slides.forEach((s, i) => {
+                const d = document.createElement('div'); d.className = 'guardian-dot' + (i === 0 ? ' active' : ''); d.setAttribute('data-index', i);
+                d.addEventListener('click', () => goToSlide(i));
+                dots.appendChild(d);
+            });
+
+            // attach handlers
+            if (prevBtn) prevBtn.onclick = () => goToSlide(_guardianCarousel.current - 1);
+            if (nextBtn) nextBtn.onclick = () => goToSlide(_guardianCarousel.current + 1);
+
+            // touch / drag handling for mobile
+            track.addEventListener('touchstart', carouselTouchStart, { passive: true });
+            track.addEventListener('touchmove', carouselTouchMove, { passive: false });
+            track.addEventListener('touchend', carouselTouchEnd);
+
+            // mouse support (for desktop dev)
+            track.addEventListener('mousedown', carouselMouseDown);
+            window.addEventListener('mouseup', carouselMouseUp);
+            window.addEventListener('mousemove', carouselMouseMove);
+
+            // on resize, ensure correct transform
+            window.addEventListener('resize', () => { setTranslateForIndex(_guardianCarousel.current); });
+
+            setTranslateForIndex(0);
+        }
+
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+        function goToSlide(index) {
+            index = clamp(index, 0, _guardianCarousel.slides.length - 1);
+            _guardianCarousel.current = index;
+            setTranslateForIndex(index);
+            updateDots();
+        }
+
+        function setTranslateForIndex(index) {
+            if (!_guardianCarousel.track) return;
+            const width = _guardianCarousel.track.clientWidth || _guardianCarousel.track.parentElement.clientWidth;
+            const x = -index * width;
+            _guardianCarousel.track.style.transform = `translateX(${x}px)`;
+            _guardianCarousel.currentTranslate = x;
+            _guardianCarousel.prevTranslate = x;
+        }
+
+        function updateDots() {
+            if (!_guardianCarousel.dotsContainer) return;
+            Array.from(_guardianCarousel.dotsContainer.children).forEach((d, i) => {
+                d.classList.toggle('active', i === _guardianCarousel.current);
+            });
+        }
+
+        // Touch / mouse handlers
+        function carouselTouchStart(e) { _startDrag(e.touches[0].clientX); }
+        function carouselTouchMove(e) { _moveDrag(e.touches[0].clientX, e); }
+        function carouselTouchEnd() { _endDrag(); }
+        function carouselMouseDown(e) { e.preventDefault(); _startDrag(e.clientX); _guardianCarousel.isMouseDown = true; }
+        function carouselMouseMove(e) { if (_guardianCarousel.isMouseDown) _moveDrag(e.clientX, e); }
+        function carouselMouseUp(e) { if (_guardianCarousel.isMouseDown) { _guardianCarousel.isMouseDown = false; _endDrag(); } }
+
+        function _startDrag(x) {
+            _guardianCarousel.isDragging = true;
+            _guardianCarousel.startX = x;
+            _guardianCarousel.prevTranslate = _guardianCarousel.currentTranslate;
+        }
+
+        function _moveDrag(x, e) {
+            if (!_guardianCarousel.isDragging) return;
+            const dx = x - _guardianCarousel.startX;
+            const track = _guardianCarousel.track;
+            const width = track.clientWidth || track.parentElement.clientWidth;
+            const nextTranslate = _guardianCarousel.prevTranslate + dx;
+            // apply with no overscroll > allow small resistance
+            track.style.transform = `translateX(${nextTranslate}px)`;
+            _guardianCarousel.currentTranslate = nextTranslate;
+            // prevent page scroll while dragging horizontally
+            if (Math.abs(dx) > 10) e.preventDefault();
+        }
+
+        function _endDrag() {
+            if (!_guardianCarousel.isDragging) return;
+            _guardianCarousel.isDragging = false;
+            const width = _guardianCarousel.track.clientWidth || _guardianCarousel.track.parentElement.clientWidth;
+            const moved = _guardianCarousel.currentTranslate - _guardianCarousel.prevTranslate;
+            // if moved more than 25% of width, change slide
+            if (Math.abs(moved) > width * 0.25) {
+                const dir = moved < 0 ? 1 : -1; // negative translate means moved left
+                goToSlide(_guardianCarousel.current + dir);
+            } else {
+                // snap back
+                setTranslateForIndex(_guardianCarousel.current);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "row_index": 1,
+  "user_type": "child",
+  "prompt_used": "Ava is a helpful guidance assistant. She is It seems like you're having trouble getting your robot vacuum ready on short notice.. She speaks with animated hand gestures, bright smile, and enthusiastic nodding. Her movements are playful and engaging. Bright, cheerful lighting. The character uses big, clear gestures to make points fun and memorable. She moves at a moderate pace, pausing to let important points sink in. The video shows her providing step-by-step guidance in a helpful, accessible way. Camera angle is medium shot, focused on upper body and hands. Background is simple and non-distracting.",
+  "narration_script": "Hi there! Let me help you with this step by step! It seems like you're having trouble getting your robot vacuum ready on short notice. Next, let's try this: First try using its auto-clean feature so that it cleans itself while charging. Next, let's try this: If that doesn't work, check online for instructions specific to your model number. You're doing great! Next, let's try this: Call customer service if needed as they may offer live chat assistance. And that's how you do it! Give it a try!",
+  "response_hash": "0da3ea99",
+  "generation_settings": {
+    "resolution": [
+      576,
+      320
+    ],
+    "fps": 16,
+    "num_frames": 49,
+    "inference_steps": 30,
+    "guidance_scale": 9.0
+  }
+}

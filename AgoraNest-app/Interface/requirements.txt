@@ -1,0 +1,25 @@
+# Web framework and real-time communication
+flask==2.3.3
+flask-socketio==5.3.6
+
+# Voice and audio processing
+speechrecognition==3.10.0
+pyttsx3==2.90
+librosa==0.10.1
+soundfile==0.12.1
+pyaudio==0.2.11
+
+# Machine learning for voice recognition
+scikit-learn==1.3.0
+numpy==1.24.3
+joblib==1.3.2
+
+# AI model dependencies (already in your environment)
+torch>=2.0.0
+transformers>=4.30.0
+
+# Data handling
+pandas==2.0.3
+
+# Additional audio processing
+webrtcvad==2.0.10

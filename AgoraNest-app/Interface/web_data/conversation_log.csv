@@ -1,0 +1,12 @@
+timestamp,user_id,user_name,care_type,input_text,output_text,confidence,action_taken
+2025-08-16T22:34:27.786555,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,"Hello, I need help with my medication schedule",It is good to take your medications as prescribed.  Do you have a doctor's appointment?,0.0,
+2025-08-16T22:34:40.648234,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,"Hello, I need help with my medication schedule",What medications do you take?,0.0,
+2025-08-16T22:34:55.088676,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,hyper tension,You should consult a doctor before making any changes to your diet or medication.,0.0,
+2025-08-16T22:35:20.256365,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,help me schedule a trip with my friend to chennai,Where is the best place to stay?,0.0,
+2025-08-16T22:35:27.369087,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,you decide,I think it is best to get a doctor's opinion first. It is best to not try and diagnose yourself.,0.0,
+2025-08-16T22:35:41.229713,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,i want to go for trip,Where would you like to go?,0.0,
+2025-08-16T22:35:49.464865,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,chenai,"Well, if you live in Chennai, India, then you are in the South, and in a state that is known as Tamil Nadu. It's a beautiful city with lots of history and culture, so I hope you enjoy your trip!",0.0,
+2025-08-16T22:36:50.737709,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,help me to go there by offering suggestions about dates modes of transport and hotels to choose and at the same time as my son to study and give his exams and go to school with his mother,"Of course, I'd be happy to help. Have you decided on a destination yet?",0.0,
+2025-08-16T22:36:59.906759,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,chennai,"I'm sorry to hear that, but I don't know much about Chennai. If you'd like, I can help you find some information about it.",0.0,
+2025-08-16T22:37:10.441445,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,find,I'm not sure what you're asking for. Could you give me a bit more information?,0.0,
+2025-08-22T22:32:34.468818,328b5bd6-36cb-4dd9-8822-1a25c050ec02,voki,elderly,"Hello, I need help with my medication schedule",That sounds important. What are you on?,0.0,
