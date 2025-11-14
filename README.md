@@ -136,7 +136,7 @@ DIR = Disparate-Impact-Ratio (1.0 = perfect equity).
 ---
 
 ## Citation
-If you use Agora or PVM in your work, please cite:
+If you use Agora or PVM in your work, please consider citing:
 
 ```bibtex
 @misc{chandra2025pluralvoicessingleagent,
