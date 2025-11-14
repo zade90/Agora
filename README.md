@@ -19,9 +19,6 @@ Agora centers a single multimodal agent (Agora-4B) that holds contextual memory,
 ## Table of contents
 - [Plural Voices Model (PVM)](#plural-voices-model-pvm)
 - [Quick start](#quick-start)
-  - [Prerequisites](#prerequisites)
-  - [Run locally (CPU / GPU)](#run-locally-cpu--gpu)
-  - [Mobile app (React Native)](#mobile-app-react-native)
 - [Key features](#key-features)
 - [Example conflict resolution](#example-conflict-resolution)
 - [Benchmarks (1,000+ mixed queries)](#benchmarks-1000-mixed-queries)
